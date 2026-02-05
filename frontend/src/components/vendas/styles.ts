@@ -1,3 +1,4 @@
+// styles.ts (arquivo completo)
 import styled from 'styled-components';
 
 export const Container = styled.div`
@@ -65,18 +66,26 @@ export const ViewButton = styled.button<{ $active: boolean }>`
 
 export const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
   margin-bottom: 32px;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const StatCard = styled.div`
   background: white;
-  padding: 24px;
+  padding: 20px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
-  gap: 16px;
+  gap: 14px;
   transition: all 0.3s ease;
 
   &:hover {
@@ -86,8 +95,8 @@ export const StatCard = styled.div`
 `;
 
 export const StatIcon = styled.div<{ $color: string }>`
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 12px;
   background-color: ${props => props.$color}15;
   display: flex;
@@ -96,6 +105,8 @@ export const StatIcon = styled.div<{ $color: string }>`
   flex-shrink: 0;
 
   svg {
+    width: 22px;
+    height: 22px;
     stroke: ${props => props.$color};
   }
 `;
@@ -103,12 +114,13 @@ export const StatIcon = styled.div<{ $color: string }>`
 export const StatContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
+  min-width: 0;
 `;
 
 export const StatLabel = styled.span`
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
   color: #666;
   text-transform: uppercase;
@@ -116,14 +128,22 @@ export const StatLabel = styled.span`
 `;
 
 export const StatValue = styled.div`
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
   font-weight: 700;
   color: #1a1a1a;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 1600px) {
+    font-size: 1.35rem;
+  }
 `;
 
 export const StatTrend = styled.span<{ $positive: boolean }>`
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   color: ${props => props.$positive ? '#059669' : '#dc2626'};
   font-weight: 500;

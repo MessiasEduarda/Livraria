@@ -195,6 +195,14 @@ export default function Vendas() {
   const [quickFilter, setQuickFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
 
+  // Função para formatar números com separador de milhar
+  const formatNumber = (value: number): string => {
+    return value.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   // Função para calcular estatísticas
   const calculateStats = () => {
     const filteredSales = getFilteredSales();
@@ -279,26 +287,43 @@ export default function Vendas() {
     return groups;
   };
 
-  const handleExport = () => {
-    // Função para exportar relatório em CSV
-    const csvContent = [
-      ['ID', 'Data', 'Cliente', 'Categoria', 'Itens', 'Total', 'Status'],
-      ...filteredSales.map(sale => [
-        sale.id,
-        formatDate(sale.date),
-        sale.customer,
-        sale.category,
-        sale.items.map(item => `${item.bookTitle} (${item.quantity}x)`).join('; '),
-        `R$ ${sale.total.toFixed(2)}`,
-        sale.status
-      ])
-    ].map(row => row.join(',')).join('\n');
+  const handleExport = async () => {
+    // Função para exportar relatório em PDF profissional
+    try {
+      const response = await fetch('/api/export-vendas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sales: filteredSales,
+          stats: stats,
+          filters: {
+            category: selectedCategory,
+            startDate: startDate,
+            endDate: endDate,
+            quickFilter: quickFilter
+          }
+        }),
+      });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `vendas_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `relatorio-vendas-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Erro ao gerar PDF. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      alert('Erro ao gerar PDF. Tente novamente.');
+    }
   };
 
   const handleRefresh = () => {
@@ -352,7 +377,7 @@ export default function Vendas() {
             </StatIcon>
             <StatContent>
               <StatLabel>Receita Total</StatLabel>
-              <StatValue>R$ {stats.totalRevenue.toFixed(2)}</StatValue>
+              <StatValue>R$ {formatNumber(stats.totalRevenue)}</StatValue>
               <StatTrend $positive={true}>+12.5% vs mês anterior</StatTrend>
             </StatContent>
           </StatCard>
@@ -381,7 +406,7 @@ export default function Vendas() {
             </StatIcon>
             <StatContent>
               <StatLabel>Ticket Médio</StatLabel>
-              <StatValue>R$ {stats.averageTicket.toFixed(2)}</StatValue>
+              <StatValue>R$ {formatNumber(stats.averageTicket)}</StatValue>
               <StatTrend $positive={false}>-3.2% vs semana anterior</StatTrend>
             </StatContent>
           </StatCard>
@@ -494,7 +519,7 @@ export default function Vendas() {
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Exportar CSV
+              Exportar PDF
             </ExportButton>
           </ActionButtons>
         </FilterSection>
@@ -520,7 +545,7 @@ export default function Vendas() {
                           <ItemName>{item.bookTitle}</ItemName>
                           <ItemQuantity>Qtd: {item.quantity}</ItemQuantity>
                         </ItemInfo>
-                        <ItemPrice>R$ {(item.price * item.quantity).toFixed(2)}</ItemPrice>
+                        <ItemPrice>R$ {formatNumber(item.price * item.quantity)}</ItemPrice>
                       </SaleItem>
                     ))}
                   </SaleItems>
@@ -528,7 +553,7 @@ export default function Vendas() {
                   <SaleFooter>
                     <div>
                       <TotalLabel>Total</TotalLabel>
-                      <TotalValue>R$ {sale.total.toFixed(2)}</TotalValue>
+                      <TotalValue>R$ {formatNumber(sale.total)}</TotalValue>
                     </div>
                     <SaleStatus $status={sale.status}>
                       {sale.status === 'completed' ? 'Concluída' : 
@@ -562,7 +587,7 @@ export default function Vendas() {
                                 <ItemName>{item.bookTitle}</ItemName>
                                 <ItemQuantity>Qtd: {item.quantity}</ItemQuantity>
                               </ItemInfo>
-                              <ItemPrice>R$ {(item.price * item.quantity).toFixed(2)}</ItemPrice>
+                              <ItemPrice>R$ {formatNumber(item.price * item.quantity)}</ItemPrice>
                             </SaleItem>
                           ))}
                         </SaleItems>
@@ -570,7 +595,7 @@ export default function Vendas() {
                         <SaleFooter>
                           <div>
                             <TotalLabel>Total</TotalLabel>
-                            <TotalValue>R$ {sale.total.toFixed(2)}</TotalValue>
+                            <TotalValue>R$ {formatNumber(sale.total)}</TotalValue>
                           </div>
                           <SaleStatus $status={sale.status}>
                             {sale.status === 'completed' ? 'Concluída' : 
