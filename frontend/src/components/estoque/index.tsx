@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { 
   Container, 
@@ -73,6 +74,7 @@ const stockLevels = [
 ];
 
 export default function Estoque() {
+  const router = useRouter();
   const [books] = useState<Book[]>(inventoryBooks);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -120,6 +122,14 @@ export default function Estoque() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  };
+
+  const handleViewDetails = (bookId: number) => {
+    router.push(`/estoque/detalhes/${bookId}`);
+  };
+
+  const handleEditBook = (bookId: number) => {
+    router.push(`/estoque/editar/${bookId}`);
   };
 
   const hasActiveFilters = selectedCategory || selectedStockLevel !== 'all';
@@ -311,13 +321,13 @@ export default function Estoque() {
                   </TableCell>
                   <TableCell>
                     <ActionButtons>
-                      <ActionButton title="Editar">
+                      <ActionButton title="Editar" onClick={() => handleEditBook(book.id)}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </ActionButton>
-                      <ActionButton title="Detalhes">
+                      <ActionButton title="Detalhes" onClick={() => handleViewDetails(book.id)}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10"/>
                           <line x1="12" y1="16" x2="12" y2="12"/>
