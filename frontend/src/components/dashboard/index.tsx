@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { 
   Container,
@@ -227,6 +228,7 @@ const alerts = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
   const [selectedPeriod, setSelectedPeriod] = useState('7dias');
 
   const formatCurrency = (value: number): string => {
@@ -239,6 +241,20 @@ export default function Dashboard() {
   const formatNumber = (value: number): string => {
     return value.toLocaleString('pt-BR');
   };
+
+  const handleAlertAction = (alertType: string) => {
+    switch(alertType) {
+        case 'warning':
+            router.push('/dashboard/estoque-critico/1');
+            break;
+        case 'info':
+            router.push('/dashboard/meta-mensal/1');
+            break;
+        case 'success':
+            router.push('/dashboard/cliente-vip/1');
+            break;
+        }
+    };
 
   // Estatísticas principais (dados calculados)
   const totalRevenue = 34400.00;
@@ -454,7 +470,12 @@ export default function Dashboard() {
                 <AlertTitle>{alert.title}</AlertTitle>
                 <AlertDescription>{alert.description}</AlertDescription>
               </AlertContent>
-              <AlertAction $color={alert.color}>{alert.action}</AlertAction>
+              <AlertAction 
+                $color={alert.color}
+                onClick={() => handleAlertAction(alert.type)}
+              >
+                {alert.action}
+              </AlertAction>
             </AlertCard>
           ))}
         </AlertsSection>

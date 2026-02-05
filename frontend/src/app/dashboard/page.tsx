@@ -1,5 +1,5 @@
-import Dashboard from '@/components/dashboard'
+import MetaMensalComponent from '@/components/dashboard';
 
-export default function DashboardPage() {
-  return <Dashboard />
+export default function MetaMensalPage() {
+  return <MetaMensalComponent />;
 }

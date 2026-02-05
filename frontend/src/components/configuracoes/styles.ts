@@ -51,10 +51,13 @@ export const Sidebar = styled.div`
   height: fit-content;
   position: sticky;
   top: 120px;
+  max-height: calc(100vh);
+  overflow-y: auto;
 
   @media (max-width: 1024px) {
     position: relative;
     top: 0;
+    max-height: none;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 8px;
