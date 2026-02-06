@@ -6,6 +6,7 @@ import Navbar from '@/components/navbar';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
+import ErrorModal from '@/components/modals/errorModal';
 import { 
   Container, 
   Header,
@@ -291,6 +292,9 @@ export default function Clientes() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorTitle, setErrorTitle] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Verificar se houve alterações
   useEffect(() => {
@@ -336,6 +340,113 @@ export default function Clientes() {
   const handleCEPChange = (value: string) => {
     const formatted = formatCEP(value);
     setNewClient({ ...newClient, cep: formatted });
+  };
+
+  const showError = (title: string, message: string) => {
+    setErrorTitle(title);
+    setErrorMessage(message);
+    setIsErrorModalOpen(true);
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = (): boolean => {
+    // Validar nome
+    if (!newClient.name.trim()) {
+      showError('Nome Obrigatório', 'O nome completo do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    if (newClient.name.trim().length < 3) {
+      showError('Nome Inválido', 'O nome completo deve ter pelo menos 3 caracteres.');
+      return false;
+    }
+
+    // Validar email
+    if (!newClient.email.trim()) {
+      showError('Email Obrigatório', 'O email do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    if (!validateEmail(newClient.email)) {
+      showError('Email Inválido', 'Digite um email válido. Exemplo: cliente@email.com');
+      return false;
+    }
+
+    // Validar telefone
+    if (!newClient.phone.trim()) {
+      showError('Telefone Obrigatório', 'O telefone do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    const phoneNumbers = newClient.phone.replace(/\D/g, '');
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      showError('Telefone Inválido', 'Digite um telefone válido com DDD. Exemplo: (11) 98765-4321');
+      return false;
+    }
+
+    // Validar CPF
+    if (!newClient.cpf.trim()) {
+      showError('CPF Obrigatório', 'O CPF do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    const cpfNumbers = newClient.cpf.replace(/\D/g, '');
+    if (cpfNumbers.length !== 11) {
+      showError('CPF Inválido', 'Digite um CPF válido com 11 dígitos. Exemplo: 123.456.789-00');
+      return false;
+    }
+
+    // Validar endereço
+    if (!newClient.endereco.trim()) {
+      showError('Endereço Obrigatório', 'O endereço do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    if (newClient.endereco.trim().length < 5) {
+      showError('Endereço Inválido', 'Digite um endereço completo com rua e número.');
+      return false;
+    }
+
+    // Validar cidade
+    if (!newClient.cidade.trim()) {
+      showError('Cidade Obrigatória', 'A cidade do cliente é obrigatória para cadastrar.');
+      return false;
+    }
+
+    if (newClient.cidade.trim().length < 3) {
+      showError('Cidade Inválida', 'Digite um nome de cidade válido.');
+      return false;
+    }
+
+    // Validar estado
+    if (!newClient.estado) {
+      showError('Estado Obrigatório', 'Selecione o estado do cliente.');
+      return false;
+    }
+
+    // Validar CEP
+    if (!newClient.cep.trim()) {
+      showError('CEP Obrigatório', 'O CEP do cliente é obrigatório para cadastrar.');
+      return false;
+    }
+
+    const cepNumbers = newClient.cep.replace(/\D/g, '');
+    if (cepNumbers.length !== 8) {
+      showError('CEP Inválido', 'Digite um CEP válido com 8 dígitos. Exemplo: 01234-567');
+      return false;
+    }
+
+    // Validar categoria
+    if (!newClient.category) {
+      showError('Categoria Obrigatória', 'Selecione uma categoria de interesse do cliente.');
+      return false;
+    }
+
+    return true;
   };
 
   const filteredClients = clients.filter(client => {
@@ -397,8 +508,13 @@ export default function Clientes() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const isFormFilled = () => {
+    return newClient.name || newClient.email || newClient.phone || newClient.cpf || 
+           newClient.endereco || newClient.cidade || newClient.estado || newClient.cep || newClient.category;
+  };
+
   const handleCancelClick = () => {
-    if (hasChanges) {
+    if (isFormFilled()) {
       setShowCancelModal(true);
     } else {
       handleCloseModal();
@@ -411,8 +527,7 @@ export default function Clientes() {
   };
 
   const handleSubmitClick = () => {
-    if (!newClient.name || !newClient.email || !newClient.phone || !newClient.cpf) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+    if (!validateForm()) {
       return;
     }
 
@@ -798,7 +913,7 @@ export default function Clientes() {
                 </div>
 
                 <FormGroup>
-                  <Label>Endereço</Label>
+                  <Label>Endereço *</Label>
                   <Input 
                     type="text"
                     placeholder="Rua, número, complemento"
@@ -809,7 +924,7 @@ export default function Clientes() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>
                   <FormGroup>
-                    <Label>Cidade</Label>
+                    <Label>Cidade *</Label>
                     <Input 
                       type="text"
                       placeholder="Digite a cidade"
@@ -819,7 +934,7 @@ export default function Clientes() {
                   </FormGroup>
 
                   <FormGroup>
-                    <Label>Estado</Label>
+                    <Label>Estado *</Label>
                     <Select 
                       value={newClient.estado}
                       onChange={(e) => setNewClient({ ...newClient, estado: e.target.value })}
@@ -832,7 +947,7 @@ export default function Clientes() {
                   </FormGroup>
 
                   <FormGroup>
-                    <Label>CEP</Label>
+                    <Label>CEP *</Label>
                     <Input 
                       type="text"
                       placeholder="00000-000"
@@ -844,7 +959,7 @@ export default function Clientes() {
                 </div>
 
                 <FormGroup>
-                  <Label>Categoria de Interesse</Label>
+                  <Label>Categoria de Interesse *</Label>
                   <Select 
                     value={newClient.category}
                     onChange={(e) => setNewClient({ ...newClient, category: e.target.value })}
@@ -875,6 +990,14 @@ export default function Clientes() {
             </ModalContent>
           </Modal>
         )}
+
+        {/* Modal de Erro */}
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          title={errorTitle}
+          message={errorMessage}
+          onClose={() => setIsErrorModalOpen(false)}
+        />
 
         {/* Modal de Cancelar Cadastro */}
         <CancelModal

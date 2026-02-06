@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
@@ -33,6 +34,7 @@ import {
   Overlay,
   ContentWrapper,
   PageWrapper,
+  NewSaleButton,
 } from './styles';
 
 interface NavbarProps {
@@ -167,6 +169,11 @@ const Navbar = ({ children }: NavbarProps) => {
         </div>
 
         <div>
+          <NewSaleButton as={Link} href="/novavenda" onClick={closeMenu}>
+            <Plus size={20} />
+            Nova Venda
+          </NewSaleButton>
+
           <DividerBottom />
 
           <LogoutButton type="button" onClick={handleLogout}>

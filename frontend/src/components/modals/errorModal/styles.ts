@@ -87,6 +87,7 @@ export const Subtitle = styled.h3`
   margin: 0 0 14px 0;
   letter-spacing: 0;
   text-align: left;
+  margin-top: -1rem;
 
   @media (max-width: 576px) {
     font-size: 1.05rem;

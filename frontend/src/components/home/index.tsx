@@ -6,6 +6,7 @@ import Navbar from '@/components/navbar';
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
+import ErrorModal from '@/components/modals/errorModal';
 import { 
   Container, 
   Header,
@@ -85,6 +86,9 @@ export default function Home() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorTitle, setErrorTitle] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   
   const [newBook, setNewBook] = useState({
     title: '',
@@ -126,9 +130,80 @@ export default function Home() {
     }
   };
 
+  const showError = (title: string, message: string) => {
+    setErrorTitle(title);
+    setErrorMessage(message);
+    setIsErrorModalOpen(true);
+  };
+
+  const validateForm = (): boolean => {
+    // Validar título
+    if (!newBook.title.trim()) {
+      showError('Título Obrigatório', 'O título do livro é obrigatório para cadastrar o produto.');
+      return false;
+    }
+
+    if (newBook.title.trim().length < 2) {
+      showError('Título Inválido', 'O título do livro deve ter pelo menos 2 caracteres.');
+      return false;
+    }
+
+    // Validar autor
+    if (!newBook.author.trim()) {
+      showError('Autor Obrigatório', 'O nome do autor é obrigatório para cadastrar o produto.');
+      return false;
+    }
+
+    if (newBook.author.trim().length < 2) {
+      showError('Autor Inválido', 'O nome do autor deve ter pelo menos 2 caracteres.');
+      return false;
+    }
+
+    // Validar categoria
+    if (!newBook.category) {
+      showError('Categoria Obrigatória', 'Selecione uma categoria para o livro.');
+      return false;
+    }
+
+    // Validar preço
+    if (!newBook.price) {
+      showError('Preço Obrigatório', 'O preço do livro é obrigatório para cadastrar o produto.');
+      return false;
+    }
+
+    const priceValue = parseFloat(newBook.price);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      showError('Preço Inválido', 'Digite um preço válido maior que zero. Exemplo: 49.90');
+      return false;
+    }
+
+    if (priceValue > 9999.99) {
+      showError('Preço Inválido', 'O preço não pode ser maior que R$ 9.999,99.');
+      return false;
+    }
+
+    // Validar estoque
+    if (!newBook.stock) {
+      showError('Estoque Obrigatório', 'A quantidade em estoque é obrigatória para cadastrar o produto.');
+      return false;
+    }
+
+    const stockValue = parseInt(newBook.stock);
+    if (isNaN(stockValue) || stockValue < 0) {
+      showError('Estoque Inválido', 'Digite uma quantidade de estoque válida maior ou igual a zero.');
+      return false;
+    }
+
+    if (stockValue > 9999) {
+      showError('Estoque Inválido', 'A quantidade em estoque não pode ser maior que 9.999 unidades.');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleAddBookClick = () => {
-    if (!newBook.title || !newBook.author || !newBook.price || !newBook.category || !newBook.stock) {
-      alert('Por favor, preencha todos os campos!');
+    if (!validateForm()) {
       return;
     }
     setIsConfirmModalOpen(true);
@@ -320,7 +395,7 @@ export default function Home() {
 
               <ModalBody>
                 <FormGroup>
-                  <Label>Título do Livro</Label>
+                  <Label>Título do Livro *</Label>
                   <Input 
                     type="text"
                     placeholder="Digite o título"
@@ -330,7 +405,7 @@ export default function Home() {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Autor</Label>
+                  <Label>Autor *</Label>
                   <Input 
                     type="text"
                     placeholder="Digite o nome do autor"
@@ -340,7 +415,7 @@ export default function Home() {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Categoria</Label>
+                  <Label>Categoria *</Label>
                   <Select 
                     value={newBook.category}
                     onChange={(e) => setNewBook({ ...newBook, category: e.target.value })}
@@ -354,7 +429,7 @@ export default function Home() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <FormGroup>
-                    <Label>Preço (R$)</Label>
+                    <Label>Preço (R$) *</Label>
                     <Input 
                       type="number"
                       step="0.01"
@@ -365,7 +440,7 @@ export default function Home() {
                   </FormGroup>
 
                   <FormGroup>
-                    <Label>Estoque</Label>
+                    <Label>Estoque *</Label>
                     <Input 
                       type="number"
                       placeholder="0"
@@ -376,7 +451,7 @@ export default function Home() {
                 </div>
 
                 <FormGroup>
-                  <Label>Imagem da Capa</Label>
+                  <Label>Imagem da Capa (opcional)</Label>
                   <ImageUpload>
                     <input 
                       type="file"
@@ -410,6 +485,13 @@ export default function Home() {
             </ModalContent>
           </Modal>
         )}
+
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          title={errorTitle}
+          message={errorMessage}
+          onClose={() => setIsErrorModalOpen(false)}
+        />
 
         <ConfirmModal
           isOpen={isConfirmModalOpen}

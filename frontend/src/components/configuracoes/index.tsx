@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Navbar from '@/components/navbar';
+import ConfirmModal from '@/components/modals/confirmModal';
+import SucessModal from '@/components/modals/sucessModal';
+import ErrorModal from '@/components/modals/errorModal';
+import CancelModal from '@/components/modals/cancelModal';
 import { 
   Container,
   Header,
@@ -101,20 +105,111 @@ export default function Configuracoes() {
   const [fontSize, setFontSize] = useState('medium');
   const [language, setLanguage] = useState('pt-BR');
 
+  // Estados para modais
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [showPhotoUploadModal, setShowPhotoUploadModal] = useState(false);
+  const [showPhotoSuccessModal, setShowPhotoSuccessModal] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [showBackupSuccessModal, setShowBackupSuccessModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [showRestoreSuccessModal, setShowRestoreSuccessModal] = useState(false);
+  const [showDeleteBackupModal, setShowDeleteBackupModal] = useState(false);
+  const [showDeleteBackupSuccessModal, setShowDeleteBackupSuccessModal] = useState(false);
+  const [selectedBackupId, setSelectedBackupId] = useState<number | null>(null);
+
   const handleSave = () => {
-    // Aqui você implementaria a lógica de salvar as configurações
+    setShowSaveConfirmModal(true);
+  };
+
+  const confirmSave = () => {
+    setShowSaveConfirmModal(false);
     console.log('Salvando configurações...');
     setHasChanges(false);
-    alert('Configurações salvas com sucesso!');
+    setShowSuccessModal(true);
   };
 
   const handleCancel = () => {
+    setShowCancelConfirmModal(true);
+  };
+
+  const confirmCancel = () => {
+    setShowCancelConfirmModal(false);
     setHasChanges(false);
-    // Aqui você resetaria os valores para os originais
   };
 
   const handleChange = () => {
     setHasChanges(true);
+  };
+
+  const handlePasswordChange = () => {
+    setShowPasswordChangeModal(true);
+  };
+
+  const confirmPasswordChange = () => {
+    setShowPasswordChangeModal(false);
+    console.log('Alterando senha...');
+    setShowPasswordSuccessModal(true);
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteAccountModal(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    setShowDeleteAccountModal(false);
+    console.log('Excluindo conta...');
+  };
+
+  const handlePhotoUpload = () => {
+    setShowPhotoUploadModal(true);
+  };
+
+  const confirmPhotoUpload = () => {
+    setShowPhotoUploadModal(false);
+    console.log('Fazendo upload de foto...');
+    setShowPhotoSuccessModal(true);
+  };
+
+  const handleCreateBackup = () => {
+    setShowBackupModal(true);
+  };
+
+  const confirmCreateBackup = () => {
+    setShowBackupModal(false);
+    console.log('Criando backup...');
+    setShowBackupSuccessModal(true);
+  };
+
+  const handleRestoreBackup = (backupId: number) => {
+    setSelectedBackupId(backupId);
+    setShowRestoreModal(true);
+  };
+
+  const confirmRestoreBackup = () => {
+    setShowRestoreModal(false);
+    console.log('Restaurando backup:', selectedBackupId);
+    setShowRestoreSuccessModal(true);
+  };
+
+  const handleDeleteBackup = (backupId: number) => {
+    setSelectedBackupId(backupId);
+    setShowDeleteBackupModal(true);
+  };
+
+  const confirmDeleteBackup = () => {
+    setShowDeleteBackupModal(false);
+    console.log('Excluindo backup:', selectedBackupId);
+    setShowDeleteBackupSuccessModal(true);
+  };
+
+  const handleDownloadBackup = (backupId: number) => {
+    console.log('Baixando backup:', backupId);
   };
 
   const menuItems = [
@@ -320,7 +415,7 @@ export default function Configuracoes() {
                       <ProfileName>Administrador Principal</ProfileName>
                       <ProfileEmail>admin@entrecapitulos.com.br</ProfileEmail>
                     </ProfileInfo>
-                    <UploadButton>
+                    <UploadButton onClick={handlePhotoUpload}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
@@ -689,7 +784,7 @@ export default function Configuracoes() {
                     </SettingItem>
                   </SettingsGroup>
 
-                  <Button style={{ marginTop: '16px' }}>
+                  <Button style={{ marginTop: '16px' }} onClick={handlePasswordChange}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
@@ -704,7 +799,7 @@ export default function Configuracoes() {
                   <DangerDescription>
                     Ações irreversíveis que afetam permanentemente sua conta
                   </DangerDescription>
-                  <DangerButton>
+                  <DangerButton onClick={handleDeleteAccount}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="3 6 5 6 21 6"/>
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -743,7 +838,7 @@ export default function Configuracoes() {
                     </InfoContent>
                   </InfoCard>
 
-                  <Button>
+                  <Button onClick={handleCreateBackup}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                       <polyline points="17 8 12 3 7 8"/>
@@ -774,7 +869,7 @@ export default function Configuracoes() {
                           <BackupDate>{backup.date}</BackupDate>
                         </div>
                         <BackupActions>
-                          <BackupButton $type="download">
+                          <BackupButton $type="download" onClick={() => handleDownloadBackup(backup.id)}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                               <polyline points="7 10 12 15 17 10"/>
@@ -782,13 +877,13 @@ export default function Configuracoes() {
                             </svg>
                             Baixar
                           </BackupButton>
-                          <BackupButton $type="restore">
+                          <BackupButton $type="restore" onClick={() => handleRestoreBackup(backup.id)}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
                             </svg>
                             Restaurar
                           </BackupButton>
-                          <BackupButton $type="delete">
+                          <BackupButton $type="delete" onClick={() => handleDeleteBackup(backup.id)}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <polyline points="3 6 5 6 21 6"/>
                               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -908,6 +1003,134 @@ export default function Configuracoes() {
           </MainContent>
         </ContentWrapper>
       </Container>
+
+      {/* MODAIS - OBSERVE QUE NÃO TEM PROP title EM ALGUNS MODAIS */}
+      {/* MODAIS */}
+      <ConfirmModal
+        isOpen={showSaveConfirmModal}
+        title="Confirmar ação"
+        message="Deseja realmente prosseguir com esta ação? Esta operação não poderá ser desfeita."
+        onConfirm={confirmSave}
+        onCancel={() => setShowSaveConfirmModal(false)}
+        confirmText="Salvar"
+        cancelText="Cancelar"
+      />
+
+      <CancelModal
+        isOpen={showCancelConfirmModal}
+        title="Cancelar Alterações"
+        message="Tem certeza que deseja cancelar? Todas as alterações não salvas serão perdidas."
+        onConfirm={confirmCancel}
+        onCancel={() => setShowCancelConfirmModal(false)}
+      />
+
+      <SucessModal
+        isOpen={showSuccessModal}
+        title="Sucesso!"
+        message="Configurações salvas com sucesso!"
+        onClose={() => setShowSuccessModal(false)}
+        buttonText="Continuar"
+      />
+
+      <ConfirmModal
+        isOpen={showPasswordChangeModal}
+        title="Alterar Senha"
+        message="Tem certeza que deseja alterar sua senha? Você precisará fazer login novamente."
+        onConfirm={confirmPasswordChange}
+        onCancel={() => setShowPasswordChangeModal(false)}
+        confirmText="Alterar"
+        cancelText="Cancelar"
+      />
+
+      <SucessModal
+        isOpen={showPasswordSuccessModal}
+        title="Senha Alterada"
+        message="Sua senha foi alterada com sucesso! Por favor, faça login novamente."
+        onClose={() => setShowPasswordSuccessModal(false)}
+        buttonText="Fazer Login"
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteAccountModal}
+        title="Excluir Conta"
+        message="Esta ação é irreversível! Todos os seus dados serão permanentemente excluídos. Tem certeza que deseja continuar?"
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setShowDeleteAccountModal(false)}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+      />
+
+      <ConfirmModal
+        isOpen={showPhotoUploadModal}
+        title="Alterar Foto"
+        message="Deseja alterar sua foto de perfil?"
+        onConfirm={confirmPhotoUpload}
+        onCancel={() => setShowPhotoUploadModal(false)}
+        confirmText="Alterar"
+        cancelText="Cancelar"
+      />
+
+      <SucessModal
+        isOpen={showPhotoSuccessModal}
+        title="Foto Alterada"
+        message="Foto de perfil alterada com sucesso!"
+        onClose={() => setShowPhotoSuccessModal(false)}
+        buttonText="Continuar"
+      />
+
+      <ConfirmModal
+        isOpen={showBackupModal}
+        title="Criar Backup"
+        message="Deseja criar um backup manual agora? Este processo pode levar alguns minutos."
+        onConfirm={confirmCreateBackup}
+        onCancel={() => setShowBackupModal(false)}
+        confirmText="Criar"
+        cancelText="Cancelar"
+      />
+
+      <SucessModal
+        isOpen={showBackupSuccessModal}
+        title="Backup Criado"
+        message="Backup criado com sucesso! Seus dados estão seguros."
+        onClose={() => setShowBackupSuccessModal(false)}
+        buttonText="Continuar"
+      />
+
+      <ConfirmModal
+        isOpen={showRestoreModal}
+        title="Restaurar Backup"
+        message="Tem certeza que deseja restaurar este backup? Os dados atuais serão substituídos."
+        onConfirm={confirmRestoreBackup}
+        onCancel={() => setShowRestoreModal(false)}
+        confirmText="Restaurar"
+        cancelText="Cancelar"
+      />
+
+      <SucessModal
+        isOpen={showRestoreSuccessModal}
+        title="Backup Restaurado"
+        message="Backup restaurado com sucesso! Os dados foram recuperados."
+        onClose={() => setShowRestoreSuccessModal(false)}
+        buttonText="Continuar"
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteBackupModal}
+        title="Excluir Backup"
+        message="Tem certeza que deseja excluir este backup? Esta ação não pode ser desfeita."
+        onConfirm={confirmDeleteBackup}
+        onCancel={() => setShowDeleteBackupModal(false)}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+      />
+
+      <SucessModal
+        isOpen={showDeleteBackupSuccessModal}
+        title="Backup Excluído"
+        message="Backup excluído com sucesso!"
+        onClose={() => setShowDeleteBackupSuccessModal(false)}
+        buttonText="Continuar"
+      />
     </Navbar>
   );
 }

@@ -29,7 +29,7 @@ export const Container = styled.div`
 
 export const LeftPanel = styled.div`
   width: 55%;
-  background-image: url('/fundo1.jpg');
+  background-image: url('/fundo1.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -50,7 +50,7 @@ export const PatternOverlay = styled.div`
   bottom: 0;
   opacity: 0.08;
   background-image: 
-    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
+    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(1, 255, 179, 0.07) 35px, rgba(1, 255, 179, 0.07) 70px);
 `;
 
 export const RightPanel = styled.div`
@@ -167,7 +167,7 @@ export const Input = styled.input<{ $hasError?: boolean }>`
 
   &:focus {
     outline: none;
-    border-color: ${props => props.$hasError ? '#ab031d' : '#0b4200'};
+    border-color: ${props => props.$hasError ? '#ab031d' : '#2a8569'};
     background-color: #2a2a2a;
   }
 
@@ -198,7 +198,7 @@ export const TogglePassword = styled.button`
   right: 18px;
   background: none;
   border: none;
-  color: #71c700;
+  color: #3CAD8C;
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -207,12 +207,12 @@ export const TogglePassword = styled.button`
   z-index: 2;
 
   &:hover:not(:disabled) {
-    color: #71c700;
+    color: #3CAD8C;
   }
 
   &:focus {
     outline: none;
-    color: #71c700;
+    color: #3CAD8C;
   }
 
   &:disabled {
@@ -250,8 +250,8 @@ export const SubmitButton = styled.button`
   margin-top: 16px;
   border: none;
   border-radius: 30px;
-  background: linear-gradient(135deg, #71c700 0%, #71c700 100%);
-  color: #161616;
+  background: linear-gradient(135deg, #2a8569 0%, #2a8569 100%);
+  color: #ffffff;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-size: 1.05rem;
   font-weight: 700;
@@ -262,12 +262,12 @@ export const SubmitButton = styled.button`
   justify-content: center;
   gap: 10px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(165, 255, 46, 0.35);
+  box-shadow: 0 4px 14px rgba(1, 255, 179, 0.07);
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #5da500 0%, #5da500 100%);
+    background: linear-gradient(135deg, #2a8569 0%, #2a8569 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(165, 255, 46, 0.45);
+    box-shadow: 0 6px 20px rgba(1, 255, 179, 0.07);
   }
 
   &:active:not(:disabled) {
@@ -284,8 +284,8 @@ export const SubmitButton = styled.button`
 export const Spinner = styled.div`
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(11, 66, 0, 0.3);
-  border-top-color: #0b4200;
+  border: 3px solid rgba(1, 255, 179, 0.07);
+  border-top-color: #2a8569;
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
 `;

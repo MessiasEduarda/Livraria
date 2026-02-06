@@ -145,10 +145,56 @@ export const DividerTop = styled.div`
 `;
 
 export const DividerBottom = styled.div`
-  width: 140%;
+  width: 130%;
   height: 1px;
   background-color: #535353;
   margin: 15px 0;
+`;
+
+export const NewSaleButton = styled.button`
+  width: 100%;
+  border: none;
+  background: linear-gradient(135deg, #3CAD8C 0%, #2d9171 100%);
+  padding: 14px 20px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #fff;
+  border-radius: 12px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(60, 173, 140, 0.3);
+  margin-left: 1.5rem;
+
+  svg {
+    color: #fff;
+    transition: all 0.3s;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #3CAD8C 0%, #2a8569 100%);
+    box-shadow: 0 6px 16px rgba(1, 255, 179, 0.07);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 18px;
+    font-size: 15px;
+    gap: 8px;
+  }
 `;
 
 export const Nav = styled.nav`
