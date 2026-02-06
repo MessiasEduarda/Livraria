@@ -31,7 +31,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2.25rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 8px 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -56,7 +56,7 @@ export const StatCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   display: flex;
   gap: 20px;
   border: 1px solid #f3f4f6;
@@ -126,7 +126,7 @@ export const ChartCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   height: 200px;
 `;
@@ -156,7 +156,7 @@ export const ActivitySection = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
 `;
 
@@ -237,7 +237,7 @@ export const AlertCard = styled.div`
   background: white;
   padding: 24px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   display: flex;
   flex-direction: column;
@@ -327,7 +327,7 @@ export const ModalContent = styled.div`
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(1, 255, 179, 0.07);
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1001;
   margin-left: 15rem;
@@ -460,7 +460,7 @@ export const ProductItem = styled.div`
   &:hover {
     background: linear-gradient(135deg, #f3f4f6, #ffffff);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px -4px rgba(1, 255, 179, 0.07);
     border-color: #d1d5db;
   }
 
@@ -533,7 +533,7 @@ export const ActionButton = styled.button`
   padding: 12px 20px;
   border: none;
   border-radius: 12px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -541,7 +541,7 @@ export const ActionButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  box-shadow: 0 4px 6px -1px rgba(11, 66, 0, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07);
 
   svg {
     width: 18px;
@@ -549,9 +549,9 @@ export const ActionButton = styled.button`
   }
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px -2px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 8px 12px -2px rgba(1, 255, 179, 0.07);
   }
 
   &:active {

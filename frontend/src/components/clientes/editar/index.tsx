@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import CancelModal from '@/components/modals/cancelModal';
+import ConfirmModal from '@/components/modals/confirmModal';
+import SucessModal from '@/components/modals/sucessModal';
 import {
   PageContainer,
   ClientesBackground,
@@ -96,6 +99,31 @@ export default function EditarClienteComponent() {
     status: cliente?.status || 'ativo'
   });
 
+  const [originalData, setOriginalData] = useState({
+    nome: cliente?.nome || '',
+    email: cliente?.email || '',
+    telefone: cliente?.telefone || '',
+    cpf: cliente?.cpf || '',
+    endereco: cliente?.endereco || '',
+    cidade: cliente?.cidade || '',
+    estado: cliente?.estado || '',
+    cep: cliente?.cep || '',
+    status: cliente?.status || 'ativo'
+  });
+
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Estados dos modais
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Verificar se houve alterações
+  useEffect(() => {
+    const changed = JSON.stringify(formData) !== JSON.stringify(originalData);
+    setHasChanges(changed);
+  }, [formData, originalData]);
+
   // Funções de formatação
   const formatPhone = (value: string): string => {
     const numbers = value.replace(/\D/g, '');
@@ -134,18 +162,45 @@ export default function EditarClienteComponent() {
     setFormData({ ...formData, cep: formatted });
   };
 
-  const handleClose = () => {
+  const handleCancelClick = () => {
+    if (hasChanges) {
+      setShowCancelModal(true);
+    } else {
+      router.push('/clientes');
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
     router.push('/clientes');
   };
 
-  const handleSubmit = () => {
+  const handleSubmitClick = () => {
     if (!formData.nome || !formData.email || !formData.telefone || !formData.cpf) {
       alert('Por favor, preencha todos os campos obrigatórios!');
       return;
     }
 
-    console.log('Cliente atualizado:', formData);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirmModal(false);
+    
+    // Simular salvamento
+    setTimeout(() => {
+      console.log('Cliente atualizado:', formData);
+      setShowSuccessModal(true);
+    }, 500);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
     router.push('/clientes');
+  };
+
+  const handleClose = () => {
+    handleCancelClick();
   };
 
   if (!cliente) {
@@ -154,7 +209,7 @@ export default function EditarClienteComponent() {
         <PageContainer>
           <NotFound>
             <h1>Cliente não encontrado</h1>
-            <BackButton onClick={handleClose}>
+            <BackButton onClick={() => router.push('/clientes')}>
               Voltar para Clientes
             </BackButton>
           </NotFound>
@@ -416,11 +471,40 @@ export default function EditarClienteComponent() {
             </ModalBody>
 
             <ModalFooter>
-              <CancelButton onClick={handleClose}>Cancelar</CancelButton>
-              <SubmitButton onClick={handleSubmit}>Salvar Alterações</SubmitButton>
+              <CancelButton onClick={handleCancelClick}>Cancelar</CancelButton>
+              <SubmitButton onClick={handleSubmitClick}>Salvar Alterações</SubmitButton>
             </ModalFooter>
           </ModalContent>
         </Modal>
+
+        {/* Modal de Cancelar Edição */}
+        <CancelModal
+          isOpen={showCancelModal}
+          title="Cancelar Edição de Cliente"
+          message="Tem certeza que deseja cancelar? Todas as alterações nos dados do cliente serão perdidas."
+          onConfirm={handleConfirmCancel}
+          onCancel={() => setShowCancelModal(false)}
+        />
+
+        {/* Modal de Confirmar Salvamento */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          title="Confirmar Alterações"
+          message="Deseja realmente salvar as alterações nos dados deste cliente?"
+          confirmText="Salvar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+
+        {/* Modal de Sucesso */}
+        <SucessModal
+          isOpen={showSuccessModal}
+          title="Cliente Atualizado!"
+          message="Os dados do cliente foram atualizados com sucesso no sistema."
+          buttonText="Continuar"
+          onClose={handleSuccessClose}
+        />
       </PageContainer>
     </Navbar>
   );

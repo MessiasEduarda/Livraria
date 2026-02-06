@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import ConfirmModal from '@/components/modals/confirmModal';
+import CancelModal from '@/components/modals/cancelModal';
+import SucessModal from '@/components/modals/sucessModal';
 import { 
   Container, 
   Header,
@@ -64,7 +67,7 @@ const initialBooks: Book[] = [
   { id: 3, title: "O Hobbit", author: "J.R.R. Tolkien", price: 52.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 15 },
   { id: 4, title: "Sapiens", author: "Yuval Harari", price: 64.90, category: "História", cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop", stock: 20 },
   { id: 5, title: "O Poder do Hábito", author: "Charles Duhigg", price: 42.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 10 },
-  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1618836850461-81b3a1969e30?w=400&h=600&fit=crop", stock: 25 },
+  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJYT34ybnLwicWjbYWoXNtiHZ_V20iG7XuFg&s", stock: 25 },
   { id: 7, title: "A Arte da Guerra", author: "Sun Tzu", price: 35.90, category: "Filosofia", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop", stock: 18 },
   { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
 ];
@@ -79,6 +82,9 @@ export default function Home() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   
   const [newBook, setNewBook] = useState({
     title: '',
@@ -120,12 +126,15 @@ export default function Home() {
     }
   };
 
-  const handleAddBook = () => {
+  const handleAddBookClick = () => {
     if (!newBook.title || !newBook.author || !newBook.price || !newBook.category || !newBook.stock) {
       alert('Por favor, preencha todos os campos!');
       return;
     }
+    setIsConfirmModalOpen(true);
+  };
 
+  const handleConfirmAddBook = () => {
     const book: Book = {
       id: books.length + 1,
       title: newBook.title,
@@ -137,15 +146,44 @@ export default function Home() {
     };
 
     setBooks([...books, book]);
+    setIsConfirmModalOpen(false);
+    setIsModalOpen(false);
+    setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
+    setImagePreview('');
+    setIsSuccessModalOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const isFormFilled = () => {
+    return newBook.title || newBook.author || newBook.price || newBook.category || newBook.stock || newBook.cover;
+  };
+
+  const handleCloseModal = () => {
+    if (isFormFilled()) {
+      setIsCancelModalOpen(true);
+    } else {
+      setIsModalOpen(false);
+      setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
+      setImagePreview('');
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setIsCancelModalOpen(false);
     setIsModalOpen(false);
     setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
     setImagePreview('');
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
-    setImagePreview('');
+  const handleCancelClose = () => {
+    setIsCancelModalOpen(false);
+  };
+
+  const handleSuccessClose = () => {
+    setIsSuccessModalOpen(false);
   };
 
   const handleViewDetails = (bookId: number) => {
@@ -367,11 +405,37 @@ export default function Home() {
 
               <ModalFooter>
                 <CancelButton onClick={handleCloseModal}>Cancelar</CancelButton>
-                <SubmitButton onClick={handleAddBook}>Adicionar Livro</SubmitButton>
+                <SubmitButton onClick={handleAddBookClick}>Adicionar Livro</SubmitButton>
               </ModalFooter>
             </ModalContent>
           </Modal>
         )}
+
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          title="Confirmar Cadastro"
+          message="Deseja realmente cadastrar este livro?"
+          onConfirm={handleConfirmAddBook}
+          onCancel={handleCancelConfirm}
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+        />
+
+        <CancelModal
+          isOpen={isCancelModalOpen}
+          title="Cancelar Cadastro"
+          message="Tem certeza que deseja cancelar? Todos os dados preenchidos serão perdidos."
+          onConfirm={handleConfirmCancel}
+          onCancel={handleCancelClose}
+        />
+
+        <SucessModal
+          isOpen={isSuccessModalOpen}
+          title="Livro Cadastrado!"
+          message="O livro foi cadastrado com sucesso no sistema."
+          onClose={handleSuccessClose}
+          buttonText="Continuar"
+        />
       </Container>
     </Navbar>
   );

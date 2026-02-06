@@ -23,7 +23,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2.25rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 8px 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -56,7 +56,7 @@ export const StatCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   display: flex;
   gap: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,14 +71,14 @@ export const StatCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #0b4200, #2563eb, #7c3aed, #059669);
+    background: linear-gradient(90deg, #3CAD8C, #2563eb, #7c3aed, #059669);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(1, 255, 179, 0.07), 0 10px 10px -5px rgba(1, 255, 179, 0.07);
     border-color: #e5e7eb;
 
     &::before {
@@ -184,12 +184,12 @@ export const ChartCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(1, 255, 179, 0.07), 0 4px 6px -2px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -229,13 +229,13 @@ export const ActivitySection = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   height: fit-content;
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(1, 255, 179, 0.07), 0 4px 6px -2px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -286,7 +286,7 @@ export const ActivityItem = styled.div<{ $type: string }>`
 
   &:hover {
     transform: translateX(6px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -299,12 +299,12 @@ export const ActivityIcon = styled.div<{ $type: string }>`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(1, 255, 179, 0.07);
 
   svg {
     color: ${props => {
       switch(props.$type) {
-        case 'sale': return '#0b4200';
+        case 'sale': return '#3CAD8C';
         case 'stock': return '#d97706';
         case 'customer': return '#2563eb';
         case 'report': return '#7c3aed';
@@ -353,7 +353,7 @@ export const AlertCard = styled.div`
   background: white;
   padding: 24px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   display: flex;
   flex-direction: column;
@@ -362,7 +362,7 @@ export const AlertCard = styled.div`
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(1, 255, 179, 0.07), 0 10px 10px -5px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -418,12 +418,12 @@ export const AlertAction = styled.button<{ $color: string }>`
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(1, 255, 179, 0.07);
 
   &:hover {
     opacity: 0.9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgba(1, 255, 179, 0.07);
   }
 
   &:active {
@@ -435,12 +435,12 @@ export const TopProductsCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(1, 255, 179, 0.07), 0 4px 6px -2px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -458,7 +458,7 @@ export const ProductItem = styled.div`
   &:hover {
     background: linear-gradient(135deg, #f3f4f6, #ffffff);
     transform: translateX(6px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07);
     border-color: #e5e7eb;
   }
 
@@ -485,7 +485,7 @@ export const ProductRank = styled.div<{ $rank: number }>`
   font-size: 1.05rem;
   color: ${props => props.$rank <= 3 ? '#1f2937' : '#6b7280'};
   flex-shrink: 0;
-  box-shadow: ${props => props.$rank <= 3 ? '0 4px 6px -1px rgba(0, 0, 0, 0.15)' : 'none'};
+  box-shadow: ${props => props.$rank <= 3 ? '0 4px 6px -1px rgba(1, 255, 179, 0.07)' : 'none'};
 `;
 
 export const ProductInfo = styled.div`
@@ -530,7 +530,7 @@ export const ProductSales = styled.div`
 export const ProductRevenue = styled.div`
   font-size: 1.125rem;
   font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
-  color: #0b4200;
+  color: #3CAD8C;
   font-weight: 800;
 `;
 
@@ -544,7 +544,7 @@ export const QuickActionCard = styled.div`
   background: white;
   padding: 24px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   display: flex;
   align-items: center;
@@ -561,14 +561,14 @@ export const QuickActionCard = styled.div`
     left: 0;
     width: 4px;
     height: 100%;
-    background: linear-gradient(180deg, #0b4200, #2563eb);
+    background: linear-gradient(180deg, #3CAD8C, #2563eb);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(1, 255, 179, 0.07), 0 10px 10px -5px rgba(1, 255, 179, 0.07);
     border-color: #e5e7eb;
 
     &::before {

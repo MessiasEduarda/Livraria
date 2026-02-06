@@ -26,7 +26,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
   font-size: 2rem;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -37,7 +37,7 @@ export const ViewToggle = styled.div`
   background: white;
   padding: 4px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 `;
 
 export const ViewButton = styled.button<{ $active: boolean }>`
@@ -47,7 +47,7 @@ export const ViewButton = styled.button<{ $active: boolean }>`
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background-color: ${props => props.$active ? '#0b4200' : 'transparent'};
+  background-color: ${props => props.$active ? '#3CAD8C' : 'transparent'};
   color: ${props => props.$active ? 'white' : '#666'};
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -56,7 +56,7 @@ export const ViewButton = styled.button<{ $active: boolean }>`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${props => props.$active ? '#002e10' : '#f5f5f5'};
+    background-color: ${props => props.$active ? '#2a8569' : '#f5f5f5'};
   }
 
   svg {
@@ -83,14 +83,14 @@ export const StatCard = styled.div`
   background: white;
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   display: flex;
   gap: 14px;
   transition: all 0.3s ease;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -158,9 +158,9 @@ export const QuickFilters = styled.div`
 
 export const QuickFilterButton = styled.button<{ $active: boolean }>`
   padding: 10px 24px;
-  border: 1px solid ${props => props.$active ? '#0b4200' : '#ddd'};
+  border: 1px solid ${props => props.$active ? '#3CAD8C' : '#ddd'};
   border-radius: 50px;
-  background-color: ${props => props.$active ? '#0b4200' : 'white'};
+  background-color: ${props => props.$active ? '#3CAD8C' : 'white'};
   color: ${props => props.$active ? 'white' : '#333'};
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -169,8 +169,8 @@ export const QuickFilterButton = styled.button<{ $active: boolean }>`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #0b4200;
-    background-color: ${props => props.$active ? '#002e10' : '#f8f9fa'};
+    border-color: #3CAD8C;
+    background-color: ${props => props.$active ? '#3CAD8C' : '#f8f9fa'};
   }
 `;
 
@@ -178,7 +178,7 @@ export const FilterSection = styled.div`
   background: white;
   padding: 24px;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   margin-bottom: 32px;
   display: flex;
   flex-direction: column;
@@ -223,8 +223,8 @@ export const DateInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -236,9 +236,9 @@ export const CategoryFilter = styled.div`
 
 export const CategoryOption = styled.button<{ $active: boolean }>`
   padding: 8px 16px;
-  border: 1px solid ${props => props.$active ? '#0b4200' : '#ddd'};
+  border: 1px solid ${props => props.$active ? '#3CAD8C' : '#ddd'};
   border-radius: 20px;
-  background-color: ${props => props.$active ? '#0b4200' : 'white'};
+  background-color: ${props => props.$active ? '#3CAD8C' : 'white'};
   color: ${props => props.$active ? 'white' : '#666'};
   font-size: 0.85rem;
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
@@ -247,8 +247,8 @@ export const CategoryOption = styled.button<{ $active: boolean }>`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #0b4200;
-    background-color: ${props => props.$active ? '#002e10' : '#f8f9fa'};
+    border-color: #3CAD8C;
+    background-color: ${props => props.$active ? '#2a8569' : '#f8f9fa'};
   }
 `;
 
@@ -280,8 +280,8 @@ export const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 
   &::placeholder {
@@ -302,7 +302,7 @@ export const ExportButton = styled.button`
   padding: 12px 24px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -311,9 +311,9 @@ export const ExportButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {
@@ -354,7 +354,7 @@ export const SaleCard = styled.div`
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  border-left: 4px solid #0b4200;
+  border-left: 4px solid #3CAD8C;
 
   &:hover {
     transform: translateY(-4px);
@@ -375,7 +375,7 @@ export const SaleId = styled.div`
   font-size: 1.1rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 700;
-  color: #0b4200;
+  color: #3CAD8C;
 `;
 
 export const SaleDate = styled.div`
@@ -448,7 +448,7 @@ export const TotalValue = styled.div`
   font-size: 1.5rem;
   font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
   font-weight: 700;
-  color: #0b4200;
+  color: #2e2e2e;
 `;
 
 export const SaleStatus = styled.div<{ $status: 'completed' | 'pending' | 'cancelled' }>`
@@ -517,9 +517,9 @@ export const TimelineDate = styled.div`
   font-size: 1.2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
   font-weight: 600;
-  color: #0b4200;
+  color: #3CAD8C;
   padding-bottom: 12px;
-  border-bottom: 2px solid #0b4200;
+  border-bottom: 2px solid #3CAD8C;
   position: relative;
 
   &::before {
@@ -529,7 +529,7 @@ export const TimelineDate = styled.div`
     bottom: -10px;
     width: 16px;
     height: 16px;
-    background-color: #0b4200;
+    background-color: #3CAD8C;
     border-radius: 50%;
     border: 3px solid #f5f5f5;
   }

@@ -92,7 +92,7 @@ const categoryData = [
   { name: 'Filosofia', value: 820, percentage: 6 }
 ];
 
-const COLORS = ['#0b4200', '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#059669'];
+const COLORS = ['#2a8569', '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#059669'];
 
 // Top 5 produtos mais vendidos
 const topProducts = [
@@ -274,7 +274,7 @@ export default function Dashboard() {
 
         <StatsGrid>
           <StatCard>
-            <StatIcon $color="#0b4200">
+            <StatIcon $color="#2a8569">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="1" x2="12" y2="23"/>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
@@ -344,8 +344,8 @@ export default function Dashboard() {
                   <AreaChart data={salesData}>
                     <defs>
                       <linearGradient id="colorVendas" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0b4200" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#0b4200" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#2a8569" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#2a8569" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -373,7 +373,7 @@ export default function Dashboard() {
                     <Area 
                       type="monotone" 
                       dataKey="vendas" 
-                      stroke="#0b4200" 
+                      stroke="#2a8569" 
                       strokeWidth={3}
                       fillOpacity={1} 
                       fill="url(#colorVendas)" 
@@ -505,7 +505,7 @@ export default function Dashboard() {
 
           <QuickActionsGrid>
             <QuickActionCard>
-              <QuickActionIcon $color="#0b4200">
+              <QuickActionIcon $color="#2a8569">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"/>
                   <circle cx="20" cy="21" r="1"/>

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -41,10 +41,25 @@ interface NavbarProps {
 
 const Navbar = ({ children }: NavbarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
-    console.log('Logout');
+    // Limpa o localStorage
+    localStorage.clear();
+    
+    // Limpa o sessionStorage
+    sessionStorage.clear();
+    
+    // Remove cookies se houver
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Redireciona para a página de login
+    router.push('/');
   };
 
   const toggleMenu = () => {

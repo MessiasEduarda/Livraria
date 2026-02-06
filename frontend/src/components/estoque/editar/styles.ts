@@ -34,7 +34,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -167,7 +167,7 @@ export const BooksTable = styled.table`
 `;
 
 export const TableHeader = styled.thead`
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
 `;
 
@@ -398,7 +398,7 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
   }
 
@@ -421,7 +421,7 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
   }
 `;
@@ -438,7 +438,7 @@ export const ImageUpload = styled.div`
   overflow: hidden;
 
   &:hover {
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     background-color: #f8fdf5;
   }
 `;
@@ -479,7 +479,7 @@ export const SubmitButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -488,9 +488,9 @@ export const SubmitButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {

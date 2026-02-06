@@ -31,7 +31,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -69,7 +69,7 @@ export const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
   }
 
@@ -174,7 +174,7 @@ export const FilterButton = styled.button`
   min-width: 200px;
 
   &:hover {
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     background-color: #f8fdf5;
   }
 
@@ -210,7 +210,7 @@ export const FilterList = styled.div`
 
 export const FilterOption = styled.div<{ $active?: boolean }>`
   padding: 12px 20px;
-  color: ${props => props.$active ? '#0b4200' : '#333'};
+  color: ${props => props.$active ? '#3CAD8C' : '#333'};
   font-weight: ${props => props.$active ? '600' : '400'};
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
   background-color: ${props => props.$active ? '#e8f5e0' : 'white'};
@@ -220,7 +220,7 @@ export const FilterOption = styled.div<{ $active?: boolean }>`
 
   &:hover {
     background-color: #f8fdf5;
-    color: #0b4200;
+    color: #3CAD8C;
   }
 
   &:not(:last-child) {
@@ -263,7 +263,7 @@ export const BooksTable = styled.table`
 `;
 
 export const TableHeader = styled.thead`
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
 `;
 
@@ -389,8 +389,8 @@ export const ActionButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: #0b4200;
-    border-color: #0b4200;
+    background-color: #3CAD8C;
+    border-color: #3CAD8C;
     color: white;
     transform: translateY(-2px);
   }

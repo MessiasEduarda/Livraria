@@ -34,7 +34,7 @@ export const HomeHeader = styled.div`
 export const HomeTitle = styled.h1`
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
   font-size: 2rem;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -106,7 +106,7 @@ export const AddButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 50px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -124,7 +124,7 @@ export const BookCard = styled.div`
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   display: flex;
   flex-direction: column;
 `;
@@ -213,7 +213,7 @@ export const ModalContent = styled.div`
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(1, 255, 179, 0.07);
   animation: slideUp 0.3s ease;
   z-index: 1001;
   margin-left: 16rem;
@@ -293,8 +293,8 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 
   &::placeholder {
@@ -316,8 +316,8 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -339,7 +339,7 @@ export const ImageUpload = styled.div`
   overflow: hidden;
 
   &:hover {
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     background-color: #faf8ff;
   }
 `;
@@ -379,7 +379,7 @@ export const SubmitButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -388,9 +388,9 @@ export const SubmitButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {

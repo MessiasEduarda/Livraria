@@ -86,3 +86,35 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Acesso negado. Você não tem permissão para acessar esta área.',
   USER_NOT_FOUND: 'Usuário não encontrado. Verifique suas credenciais',
 };
+
+// ... seu código existente ...
+
+// Tipo para erros que devem abrir modal
+export type ModalErrorType = 'CREDENTIALS_INVALID' | 'UNAUTHORIZED' | 'USER_NOT_FOUND';
+
+// Verifica se o erro deve abrir modal
+export function shouldShowModal(error: ValidationError | null): boolean {
+  if (!error) return false;
+  
+  const modalErrors = [
+    ERROR_MESSAGES.CREDENTIALS_INVALID,
+    ERROR_MESSAGES.UNAUTHORIZED,
+    ERROR_MESSAGES.USER_NOT_FOUND
+  ];
+  
+  return modalErrors.includes(error.message);
+}
+
+// Função para obter título do modal baseado na mensagem
+export function getModalTitle(message: string): string {
+  if (message === ERROR_MESSAGES.CREDENTIALS_INVALID) {
+    return 'Login inválido!';
+  }
+  if (message === ERROR_MESSAGES.UNAUTHORIZED) {
+    return 'Acesso negado!';
+  }
+  if (message === ERROR_MESSAGES.USER_NOT_FOUND) {
+    return 'Usuário não encontrado!';
+  }
+  return 'Erro!';
+}

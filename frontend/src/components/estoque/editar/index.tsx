@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import CancelModal from '@/components/modals/cancelModal';
+import ConfirmModal from '@/components/modals/confirmModal';
+import SucessModal from '@/components/modals/sucessModal';
 import {
   PageContainer,
   EstoqueBackground,
@@ -99,9 +102,39 @@ export default function EditarEstoqueComponent() {
     cover: book?.cover || ''
   });
 
-  const [imagePreview, setImagePreview] = useState(book?.cover || '');
+  const [originalData, setOriginalData] = useState({
+    title: book?.title || '',
+    author: book?.author || '',
+    price: book?.price.toString() || '',
+    category: book?.category || '',
+    stock: book?.stock.toString() || '',
+    cover: book?.cover || ''
+  });
 
-  const handleClose = () => {
+  const [imagePreview, setImagePreview] = useState(book?.cover || '');
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Estados dos modais
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Verificar se houve alterações
+  useEffect(() => {
+    const changed = JSON.stringify(formData) !== JSON.stringify(originalData);
+    setHasChanges(changed);
+  }, [formData, originalData]);
+
+  const handleCancelClick = () => {
+    if (hasChanges) {
+      setShowCancelModal(true);
+    } else {
+      router.push('/estoque');
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
     router.push('/estoque');
   };
 
@@ -118,15 +151,32 @@ export default function EditarEstoqueComponent() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmitClick = () => {
     if (!formData.title || !formData.author || !formData.price || !formData.category || !formData.stock) {
       alert('Por favor, preencha todos os campos!');
       return;
     }
 
-    // Aqui você faria a atualização real do livro
-    console.log('Livro atualizado:', formData);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirmModal(false);
+    
+    // Simular salvamento
+    setTimeout(() => {
+      console.log('Livro atualizado:', formData);
+      setShowSuccessModal(true);
+    }, 500);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
     router.push('/estoque');
+  };
+
+  const handleClose = () => {
+    handleCancelClick();
   };
 
   const getStockStatus = (stock: number): 'low' | 'medium' | 'high' => {
@@ -148,7 +198,7 @@ export default function EditarEstoqueComponent() {
         <PageContainer>
           <NotFound>
             <h1>Livro não encontrado</h1>
-            <BackButton onClick={handleClose}>
+            <BackButton onClick={() => router.push('/estoque')}>
               Voltar para Estoque
             </BackButton>
           </NotFound>
@@ -324,7 +374,7 @@ export default function EditarEstoqueComponent() {
           <ModalOverlay onClick={handleClose} />
           <ModalContent>
             <ModalHeader>
-              <ModalTitle>Editar Livro</ModalTitle>
+              <ModalTitle>Editar Livro no Estoque</ModalTitle>
               <ModalClose onClick={handleClose}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
@@ -419,11 +469,40 @@ export default function EditarEstoqueComponent() {
             </ModalBody>
 
             <ModalFooter>
-              <CancelButton onClick={handleClose}>Cancelar</CancelButton>
-              <SubmitButton onClick={handleSubmit}>Salvar Alterações</SubmitButton>
+              <CancelButton onClick={handleCancelClick}>Cancelar</CancelButton>
+              <SubmitButton onClick={handleSubmitClick}>Salvar Alterações</SubmitButton>
             </ModalFooter>
           </ModalContent>
         </Modal>
+
+        {/* Modal de Cancelar Edição */}
+        <CancelModal
+          isOpen={showCancelModal}
+          title="Cancelar Edição de Estoque"
+          message="Tem certeza que deseja cancelar? Todas as alterações no estoque serão perdidas."
+          onConfirm={handleConfirmCancel}
+          onCancel={() => setShowCancelModal(false)}
+        />
+
+        {/* Modal de Confirmar Salvamento */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          title="Confirmar Atualização de Estoque"
+          message="Deseja realmente salvar as alterações no estoque deste livro?"
+          confirmText="Salvar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+
+        {/* Modal de Sucesso */}
+        <SucessModal
+          isOpen={showSuccessModal}
+          title="Estoque Atualizado!"
+          message="As informações de estoque do livro foram atualizadas com sucesso no sistema."
+          buttonText="Continuar"
+          onClose={handleSuccessClose}
+        />
       </PageContainer>
     </Navbar>
   );

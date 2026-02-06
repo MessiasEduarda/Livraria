@@ -171,7 +171,7 @@ export const NavLinkIcon = styled.div<NavLinkProps>`
   justify-content: center;
 
   svg {
-    color: ${({ selected }) => (selected ? '#a5ff2e' : '#95A5A6')};
+    color: ${({ selected }) => (selected ? '#3CAD8C' : '#95A5A6')};
     transition: all 0.3s;
   }
 `;
@@ -181,7 +181,7 @@ export const NavLinkText = styled.span<NavLinkProps>`
   font-size: 16px;
   font-weight: ${({ selected }) => (selected ? '600' : '400')};
   font-style: normal;
-  color: ${({ selected }) => (selected ? '#a5ff2e' : '#95A5A6')};
+  color: ${({ selected }) => (selected ? '#3CAD8C' : '#95A5A6')};
   white-space: nowrap;
   line-height: 100%;
   letter-spacing: 0%;
@@ -201,7 +201,7 @@ export const NavLink = styled(Link)<NavLinkProps>`
   align-items: center;
   gap: 14px;
   border-radius: 0 25px 25px 0;
-  background: ${({ selected }) => (selected ? 'rgba(80, 219, 52, 0.1)' : 'transparent')};
+  background: ${({ selected }) => (selected ? 'rgba(1, 255, 179, 0.07)' : 'transparent')};
   text-decoration: none;
   transition: all 0.3s;
   position: relative;
@@ -213,15 +213,15 @@ export const NavLink = styled(Link)<NavLinkProps>`
     top: 0;
     bottom: 0;
     width: 5px;
-    background-color: ${({ selected }) => (selected ? '#a5ff2e' : 'transparent')};
+    background-color: ${({ selected }) => (selected ? '#3CAD8C' : 'transparent')};
     transition: all 0.3s;
   }
 
   &:hover {
-    background: rgba(80, 219, 52, 0.1);
+    background: rgba(1, 255, 179, 0.07);
 
     &::before {
-      background-color: #a5ff2e;
+      background-color: #3CAD8C;
     }
 
     ${NavLinkText} {
@@ -232,12 +232,12 @@ export const NavLink = styled(Link)<NavLinkProps>`
       line-height: 100%;
       letter-spacing: 0%;
       vertical-align: middle;
-      color: #a5ff2e;
+      color: #3CAD8C;
     }
 
     ${NavLinkIcon} {
       svg {
-        color: #a5ff2e;
+        color: #3CAD8C;
       }
     }
   }
@@ -287,7 +287,7 @@ export const LogoutButton = styled.button`
   }
 
   &:hover {
-    background: rgba(231, 76, 60, 0.1);
+    background: rgba(119, 64, 64, 0.07);
     
     &::before {
       background-color: #E74C3C;

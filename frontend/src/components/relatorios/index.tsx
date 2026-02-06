@@ -105,7 +105,7 @@ const reportTypes = [
       </svg>
     ),
     badge: 'Popular',
-    color: '#0b4200'
+    color: '#2a8569'
   },
   {
     id: 'estoque',
@@ -412,7 +412,7 @@ export default function Relatorios() {
     { name: 'Outros', value: 10, percentage: '10%' }
   ];
 
-  const COLORS = ['#0b4200', '#2563eb', '#7c3aed', '#dc2626', '#ea580c'];
+  const COLORS = ['#2a8569', '#2563eb', '#7c3aed', '#dc2626', '#ea580c'];
 
   return (
     <Navbar>
@@ -679,7 +679,7 @@ export default function Relatorios() {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                               }}
                             />
-                            <Bar dataKey="vendas" fill="#0b4200" radius={[8, 8, 0, 0]} />
+                            <Bar dataKey="vendas" fill="#2a8569" radius={[8, 8, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </ChartWrapper>
@@ -757,12 +757,12 @@ export default function Relatorios() {
                     padding: '20px', 
                     backgroundColor: '#f8fdf5', 
                     borderRadius: '12px',
-                    borderLeft: '4px solid #0b4200',
+                    borderLeft: '4px solid #2a8569',
                     marginTop: '16px'
                   }}>
                     <h4 style={{ 
                       margin: '0 0 12px 0', 
-                      color: '#0b4200',
+                      color: '#2a8569',
                       fontFamily: 'var(--font-metropolis-semibold), "Metropolis", sans-serif',
                       fontSize: '1.1rem'
                     }}>

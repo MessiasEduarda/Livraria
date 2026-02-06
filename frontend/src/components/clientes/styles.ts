@@ -31,7 +31,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -69,8 +69,8 @@ export const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 
   &::placeholder {
@@ -92,12 +92,12 @@ export const StatCard = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   transition: all 0.3s ease;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 16px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -145,9 +145,9 @@ export const QuickFilters = styled.div`
 
 export const QuickFilterButton = styled.button<{ $active: boolean }>`
   padding: 10px 24px;
-  border: 1px solid ${props => props.$active ? '#0b4200' : '#ddd'};
+  border: 1px solid ${props => props.$active ? '#3CAD8C' : '#ddd'};
   border-radius: 50px;
-  background-color: ${props => props.$active ? '#0b4200' : 'white'};
+  background-color: ${props => props.$active ? '#3CAD8C' : 'white'};
   color: ${props => props.$active ? 'white' : '#333'};
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -156,8 +156,8 @@ export const QuickFilterButton = styled.button<{ $active: boolean }>`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #0b4200;
-    background-color: ${props => props.$active ? '#002e10' : '#f8fdf5'};
+    border-color: #3CAD8C;
+    background-color: ${props => props.$active ? '#2a8569' : '#f8fdf5'};
   }
 `;
 
@@ -199,7 +199,7 @@ export const FilterButton = styled.button`
   min-width: 200px;
 
   &:hover {
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     background-color: #f8fdf5;
   }
 
@@ -216,7 +216,7 @@ export const FilterList = styled.div`
   background: white;
   border: 1px solid #ddd;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   overflow: hidden;
   z-index: 10;
   animation: slideDown 0.2s ease;
@@ -235,7 +235,7 @@ export const FilterList = styled.div`
 
 export const FilterOption = styled.div<{ $active?: boolean }>`
   padding: 12px 20px;
-  color: ${props => props.$active ? '#0b4200' : '#333'};
+  color: ${props => props.$active ? '#3CAD8C' : '#333'};
   font-weight: ${props => props.$active ? '600' : '400'};
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
   background-color: ${props => props.$active ? '#e8f5e0' : 'white'};
@@ -245,7 +245,7 @@ export const FilterOption = styled.div<{ $active?: boolean }>`
 
   &:hover {
     background-color: #f8fdf5;
-    color: #0b4200;
+    color: #3CAD8C;
   }
 
   &:not(:last-child) {
@@ -286,19 +286,19 @@ export const AddButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 50px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(11, 66, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {
@@ -316,11 +316,11 @@ export const ClientsTable = styled.table`
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 `;
 
 export const TableHeader = styled.thead`
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
 `;
 
@@ -370,7 +370,7 @@ export const ClientAvatar = styled.div<{ $status: 'active' | 'inactive' | 'vip' 
   border-radius: 50%;
   background: ${props => {
     if (props.$status === 'vip') return 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
-    if (props.$status === 'active') return 'linear-gradient(135deg, #0b4200 0%, #28a745 100%)';
+    if (props.$status === 'active') return 'linear-gradient(135deg, #3CAD8C 0%, #3CAD8C 100%)';
     return 'linear-gradient(135deg, #999 0%, #ccc 100%)';
   }};
   display: flex;
@@ -381,7 +381,7 @@ export const ClientAvatar = styled.div<{ $status: 'active' | 'inactive' | 'vip' 
   font-size: 1.1rem;
   color: ${props => props.$status === 'inactive' ? '#333' : 'white'};
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 `;
 
 export const ClientName = styled.div`
@@ -451,8 +451,8 @@ export const ActionButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: #0b4200;
-    border-color: #0b4200;
+    background-color: #3CAD8C;
+    border-color: #3CAD8C;
     color: white;
     transform: translateY(-2px);
   }
@@ -473,7 +473,7 @@ export const EmptyState = styled.div`
   color: #999;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 
   svg {
     margin-bottom: 24px;
@@ -605,7 +605,7 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
+    border-color: #3CAD8C;
     box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
   }
 
@@ -628,8 +628,8 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -663,7 +663,7 @@ export const SubmitButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -672,9 +672,9 @@ export const SubmitButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {

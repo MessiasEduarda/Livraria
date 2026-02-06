@@ -34,7 +34,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -167,7 +167,7 @@ export const BooksTable = styled.table`
 `;
 
 export const TableHeader = styled.thead`
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
 `;
 
@@ -400,7 +400,7 @@ export const BookCoverImage = styled.img`
 `;
 
 export const PriceBox = styled.div`
-  background: linear-gradient(135deg, #0b4200 0%, #002e10 100%);
+  background: linear-gradient(135deg, #3CAD8C 0%, #3CAD8C 100%);
   padding: 20px;
   border-radius: 12px;
   text-align: center;
@@ -408,7 +408,7 @@ export const PriceBox = styled.div`
 
 export const PriceLabel = styled.div`
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(0, 0, 0, 0.8);
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
   margin-bottom: 8px;
   text-transform: uppercase;
@@ -418,7 +418,7 @@ export const PriceLabel = styled.div`
 export const PriceValue = styled.div`
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: #2e2e2e;
   font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
 `;
 
@@ -571,7 +571,7 @@ export const EditButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -580,9 +580,9 @@ export const EditButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {

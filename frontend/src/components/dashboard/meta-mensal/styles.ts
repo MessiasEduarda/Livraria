@@ -31,7 +31,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2.25rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 8px 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -56,7 +56,7 @@ export const StatCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   display: flex;
   gap: 20px;
   border: 1px solid #f3f4f6;
@@ -126,7 +126,7 @@ export const ChartCard = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   height: 200px;
 `;
@@ -156,7 +156,7 @@ export const ActivitySection = styled.div`
   background: white;
   padding: 28px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
 `;
 
@@ -237,7 +237,7 @@ export const AlertCard = styled.div`
   background: white;
   padding: 24px;
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(1, 255, 179, 0.07), 0 2px 4px -1px rgba(1, 255, 179, 0.07);
   border: 1px solid #f3f4f6;
   display: flex;
   flex-direction: column;
@@ -327,7 +327,7 @@ export const ModalContent = styled.div`
   max-height: 68vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(1, 255, 179, 0.07);
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1001;
   margin-left: 15rem;
@@ -447,13 +447,13 @@ export const ProgressBarContainer = styled.div`
   background: #f3f4f6;
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 2px 4px rgba(1, 255, 179, 0.07);
 `;
 
 export const ProgressBar = styled.div<{ $percentage: number }>`
   height: 100%;
   width: ${props => props.$percentage}%;
-  background: linear-gradient(90deg, #0b4200, #059669);
+  background: linear-gradient(90deg, #3CAD8C, #005f41);
   border-radius: 18px;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -508,7 +508,7 @@ export const StatItem = styled.div`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px -2px rgba(1, 255, 179, 0.07);
     border-color: #d1d5db;
   }
 `;
@@ -550,7 +550,7 @@ export const InfoIcon = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(1, 255, 179, 0.07);
 
   svg {
     color: #2563eb;
@@ -597,7 +597,7 @@ export const TimelineItem = styled.div<{ $completed: boolean }>`
     top: 30px;
     bottom: 0;
     width: 2px;
-    background: ${props => props.$completed ? '#0b4200' : '#d1d5db'};
+    background: ${props => props.$completed ? '#3CAD8C' : '#d1d5db'};
   }
 
   &:last-child {
@@ -609,12 +609,12 @@ export const TimelineDot = styled.div<{ $completed: boolean }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: ${props => props.$completed ? '#0b4200' : 'white'};
-  border: 3px solid ${props => props.$completed ? '#0b4200' : '#d1d5db'};
+  background: ${props => props.$completed ? '#3CAD8C' : 'white'};
+  border: 3px solid ${props => props.$completed ? '#3CAD8C' : '#d1d5db'};
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  box-shadow: ${props => props.$completed ? '0 0 0 4px rgba(11, 66, 0, 0.1)' : 'none'};
+  box-shadow: ${props => props.$completed ? '0 0 0 4px rgba(1, 255, 179, 0.07)' : 'none'};
 
   ${props => props.$completed && `
     &::after {

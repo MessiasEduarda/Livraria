@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import CancelModal from '@/components/modals/cancelModal';
+import ConfirmModal from '@/components/modals/confirmModal';
+import SucessModal from '@/components/modals/sucessModal';
 import {
   PageContainer,
   HomeBackground,
@@ -69,16 +72,31 @@ export default function EditarComponent() {
     cover: ''
   });
 
+  const [originalData, setOriginalData] = useState({
+    id: 0,
+    title: '',
+    author: '',
+    price: 0,
+    stock: 0,
+    category: '',
+    cover: ''
+  });
+
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Estados dos modais
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const categories = ["Programação", "JavaScript", "Arquitetura de Software", "Desenvolvimento", "Design", "Ficção", "Tecnologia", "Fantasia", "História", "Autoajuda", "Filosofia"];
 
   useEffect(() => {
     const book = booksData.find(b => b.id === bookId);
     if (book) {
-      setFormData({
+      const bookData = {
         id: book.id,
         title: book.title,
         author: book.author,
@@ -86,13 +104,21 @@ export default function EditarComponent() {
         stock: book.stock,
         category: book.category,
         cover: book.cover
-      });
+      };
+      setFormData(bookData);
+      setOriginalData(bookData);
       if (book.cover) {
         setImagePreview(book.cover);
       }
     }
     setLoading(false);
   }, [bookId]);
+
+  // Verificar se houve alterações
+  useEffect(() => {
+    const changed = JSON.stringify(formData) !== JSON.stringify(originalData);
+    setHasChanges(changed);
+  }, [formData, originalData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -117,7 +143,20 @@ export default function EditarComponent() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCancelClick = () => {
+    if (hasChanges) {
+      setShowCancelModal(true);
+    } else {
+      router.push('/home');
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
+    router.push('/home');
+  };
+
+  const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.author || !formData.category) {
@@ -125,18 +164,26 @@ export default function EditarComponent() {
       return;
     }
 
-    setSaving(true);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirmModal(false);
     
+    // Simular salvamento
     setTimeout(() => {
-      // Aqui você pode implementar a lógica de salvar
       console.log('Dados salvos:', formData);
-      setSaving(false);
-      router.push('/home');
-    }, 1000);
+      setShowSuccessModal(true);
+    }, 500);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    router.push('/home');
   };
 
   const handleClose = () => {
-    router.push('/home');
+    handleCancelClick();
   };
 
   if (loading) {
@@ -224,7 +271,7 @@ export default function EditarComponent() {
             </ModalHeader>
 
             <ModalBody>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmitClick}>
                 <FormGroup>
                   <Label>Título do Livro</Label>
                   <Input 
@@ -319,17 +366,46 @@ export default function EditarComponent() {
                 </FormGroup>
 
                 <ModalFooter>
-                  <CancelButton type="button" onClick={handleClose}>
+                  <CancelButton type="button" onClick={handleCancelClick}>
                     Cancelar
                   </CancelButton>
-                  <SubmitButton type="submit" disabled={saving}>
-                    {saving ? 'Salvando...' : 'Salvar Alterações'}
+                  <SubmitButton type="submit">
+                    Salvar Alterações
                   </SubmitButton>
                 </ModalFooter>
               </form>
             </ModalBody>
           </ModalContent>
         </Modal>
+
+        {/* Modal de Cancelar Edição */}
+        <CancelModal
+          isOpen={showCancelModal}
+          title="Cancelar Edição"
+          message="Tem certeza que deseja cancelar? Todas as alterações serão perdidas."
+          onConfirm={handleConfirmCancel}
+          onCancel={() => setShowCancelModal(false)}
+        />
+
+        {/* Modal de Confirmar Salvamento */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          title="Confirmar Edição"
+          message="Deseja realmente salvar as alterações deste livro?"
+          confirmText="Salvar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+
+        {/* Modal de Sucesso */}
+        <SucessModal
+          isOpen={showSuccessModal}
+          title="Livro Editado!"
+          message="As alterações do livro foram salvas com sucesso no sistema."
+          buttonText="Continuar"
+          onClose={handleSuccessClose}
+        />
       </PageContainer>
     </Navbar>
   );

@@ -21,7 +21,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 8px 0;
   font-weight: 600;
 `;
@@ -47,7 +47,7 @@ export const Sidebar = styled.div`
   background: white;
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   height: fit-content;
   position: sticky;
   top: 120px;
@@ -93,7 +93,7 @@ export const SidebarIcon = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.$active ? '#0b4200' : '#666'};
+  color: ${props => props.$active ? '#3CAD8C' : '#666'};
   flex-shrink: 0;
 `;
 
@@ -204,14 +204,14 @@ export const Toggle = styled.button<{ checked: boolean }>`
   height: 28px;
   border-radius: 14px;
   border: none;
-  background-color: ${props => props.checked ? '#0b4200' : '#ccc'};
+  background-color: ${props => props.checked ? '#3CAD8C' : '#ccc'};
   position: relative;
   cursor: pointer;
   transition: background-color 0.3s ease;
   flex-shrink: 0;
 
   &:hover {
-    background-color: ${props => props.checked ? '#002e10' : '#999'};
+    background-color: ${props => props.checked ? '#2a8569' : '#999'};
   }
 `;
 
@@ -224,7 +224,7 @@ export const ToggleSlider = styled.div<{ $checked: boolean }>`
   top: 3px;
   left: ${props => props.$checked ? '27px' : '3px'};
   transition: left 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(1, 255, 179, 0.07);
 `;
 
 export const Input = styled.input`
@@ -239,8 +239,8 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 
   &::placeholder {
@@ -262,8 +262,8 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -280,8 +280,8 @@ export const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 
   &::placeholder {
@@ -294,10 +294,10 @@ export const Button = styled.button`
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  border: 1px solid #0b4200;
+  border: 1px solid #3CAD8C;
   border-radius: 10px;
   background-color: white;
-  color: #0b4200;
+  color: #3CAD8C;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 600;
@@ -305,10 +305,10 @@ export const Button = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #0b4200;
+    background-color: #3CAD8C;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {
@@ -323,19 +323,19 @@ export const SaveButton = styled.button`
   padding: 12px 28px;
   border: none;
   border-radius: 10px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.95rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(11, 66, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 
   &:hover {
-    background-color: #002e10;
+    background-color: #2a8569;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
   }
 
   &:active {
@@ -374,7 +374,7 @@ export const InfoCard = styled.div`
   padding: 20px;
   border-radius: 12px;
   background-color: #e8f5e0;
-  border-left: 4px solid #0b4200;
+  border-left: 4px solid #3CAD8C;
 `;
 
 export const InfoIcon = styled.div`
@@ -386,7 +386,7 @@ export const InfoIcon = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #0b4200;
+  color: #3CAD8C;
 `;
 
 export const InfoContent = styled.div`
@@ -397,7 +397,7 @@ export const InfoTitle = styled.h4`
   font-size: 1rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 600;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 4px 0;
 `;
 
@@ -441,13 +441,13 @@ export const ProfileAvatar = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0b4200 0%, #28a745 100%);
+  background: linear-gradient(135deg, #3CAD8C 0%, #005c40 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(11, 66, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
 `;
 
 export const ProfileInfo = styled.div`
@@ -486,8 +486,8 @@ export const UploadButton = styled.button`
 
   &:hover {
     background-color: #f5f5f5;
-    border-color: #0b4200;
-    color: #0b4200;
+    border-color: #3CAD8C;
+    color: #3CAD8C;
   }
 `;
 
@@ -652,14 +652,14 @@ export const BackupButton = styled.button<{ $type: 'download' | 'restore' | 'del
   border: 1px solid ${props => {
     if (props.$type === 'delete') return '#dc2626';
     if (props.$type === 'restore') return '#2563eb';
-    return '#0b4200';
+    return '#3CAD8C';
   }};
   border-radius: 8px;
   background-color: white;
   color: ${props => {
     if (props.$type === 'delete') return '#dc2626';
     if (props.$type === 'restore') return '#2563eb';
-    return '#0b4200';
+    return '#3CAD8C';
   }};
   font-size: 0.85rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -671,7 +671,7 @@ export const BackupButton = styled.button<{ $type: 'download' | 'restore' | 'del
     background-color: ${props => {
       if (props.$type === 'delete') return '#dc2626';
       if (props.$type === 'restore') return '#2563eb';
-      return '#0b4200';
+      return '#3CAD8C';
     }};
     color: white;
   }

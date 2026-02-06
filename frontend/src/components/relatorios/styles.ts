@@ -30,7 +30,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0 0 8px 0;
   font-weight: 600;
 `;
@@ -53,7 +53,7 @@ export const QuickActionCard = styled.div`
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -63,7 +63,7 @@ export const QuickActionCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 20px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -76,7 +76,7 @@ export const QuickActionIcon = styled.div`
   background: #f0f7ed;
   border-radius: 12px;
   flex-shrink: 0;
-  color: #0b4200;
+  color: #3CAD8C;
   
   svg {
     width: 24px;
@@ -124,13 +124,13 @@ export const ReportTypeCard = styled.div<{ $selected: boolean; $color: string }>
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 3px solid ${props => props.$selected ? '#0b4200' : 'transparent'};
+  border: 3px solid ${props => props.$selected ? '#3CAD8C' : 'transparent'};
   position: relative;
   overflow: hidden;
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(1, 255, 179, 0.07);
   }
 
   &::before {
@@ -140,7 +140,7 @@ export const ReportTypeCard = styled.div<{ $selected: boolean; $color: string }>
     left: 0;
     right: 0;
     height: 4px;
-    background: ${props => props.$selected ? '#0b4200' : props.$color};
+    background: ${props => props.$selected ? '#3CAD8C' : props.$color};
     opacity: ${props => props.$selected ? '1' : '0'};
     transition: opacity 0.3s ease;
   }
@@ -201,13 +201,13 @@ export const ReportDescription = styled.p`
 export const FiltersPanel = styled.div`
   background: white;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   margin-bottom: 32px;
   overflow: hidden;
 `;
 
 export const FiltersPanelHeader = styled.div`
-  background: linear-gradient(135deg, #0b4200 0%, #28a745 100%);
+  background: linear-gradient(135deg, #3CAD8C 0%, #3CAD8C 100%);
   padding: 20px 24px;
 `;
 
@@ -263,8 +263,8 @@ export const DateInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -282,8 +282,8 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #0b4200;
-    box-shadow: 0 0 0 3px rgba(11, 66, 0, 0.1);
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
   }
 `;
 
@@ -304,7 +304,7 @@ export const CheckboxLabel = styled.label`
   user-select: none;
 
   &:hover {
-    color: #0b4200;
+    color: #3CAD8C;
   }
 `;
 
@@ -312,7 +312,7 @@ export const CheckboxInput = styled.input`
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #0b4200;
+  accent-color: #3CAD8C;
 `;
 
 export const ActionButtons = styled.div`
@@ -329,19 +329,19 @@ export const GenerateButton = styled.button<{ disabled?: boolean }>`
   padding: 14px 32px;
   border: none;
   border-radius: 10px;
-  background: ${props => props.disabled ? '#ccc' : 'linear-gradient(135deg, #0b4200 0%, #28a745 100%)'};
+  background: ${props => props.disabled ? '#ccc' : 'linear-gradient(135deg, #3CAD8C 0%, #3CAD8C 100%)'};
   color: white;
   font-size: 1rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
   font-weight: 600;
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(11, 66, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
 
   &:hover {
     ${props => !props.disabled && `
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(11, 66, 0, 0.3);
+      box-shadow: 0 6px 20px rgba(1, 255, 179, 0.07);
     `}
   }
 
@@ -388,7 +388,7 @@ export const PreviewHeader = styled.div`
 export const PreviewTitle = styled.h2`
   font-size: 1.5rem;
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  color: #0b4200;
+  color: #3CAD8C;
   margin: 0;
   font-weight: 600;
 `;
@@ -405,7 +405,7 @@ export const ExportButton = styled.button<{ disabled?: boolean }>`
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background-color: #0b4200;
+  background-color: #3CAD8C;
   color: white;
   font-size: 0.9rem;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
@@ -416,9 +416,9 @@ export const ExportButton = styled.button<{ disabled?: boolean }>`
 
   &:hover {
     ${props => !props.disabled && `
-      background-color: #002e10;
+      background-color: #2a8569;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(11, 66, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(1, 255, 179, 0.07);
     `}
   }
 
@@ -431,7 +431,7 @@ export const ExportButton = styled.button<{ disabled?: boolean }>`
 export const ReportPreview = styled.div`
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(1, 255, 179, 0.07);
   overflow: hidden;
 `;
 
@@ -449,7 +449,7 @@ export const ReportHeader = styled.div`
   align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 3px solid #0b4200;
+  border-bottom: 3px solid #3CAD8C;
   flex-wrap: wrap;
   gap: 24px;
 `;
@@ -460,13 +460,13 @@ export const ReportLogo = styled.div`
   gap: 16px;
 
   svg {
-    color: #0b4200;
+    color: #3CAD8C;
   }
 
   h1 {
     font-size: 1.8rem;
     font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-    color: #0b4200;
+    color: #3CAD8C;
     margin: 0;
     font-weight: 700;
   }
@@ -522,7 +522,7 @@ export const ReportSection = styled.section`
 export const SectionDivider = styled.hr`
   border: none;
   height: 2px;
-  background: linear-gradient(to right, #0b4200, transparent);
+  background: linear-gradient(to right, #3CAD8C, transparent);
   margin: 32px 0;
 `;
 
@@ -537,7 +537,7 @@ export const StatCard = styled.div`
   background: linear-gradient(135deg, #f8fdf5 0%, #e8f5e0 100%);
   padding: 20px;
   border-radius: 12px;
-  border-left: 4px solid #0b4200;
+  border-left: 4px solid #3CAD8C;
 `;
 
 export const StatLabel = styled.div`
@@ -553,7 +553,7 @@ export const StatLabel = styled.div`
 export const StatValue = styled.div`
   font-size: 1.8rem;
   font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
-  color: #0b4200;
+  color: #3CAD8C;
   font-weight: 700;
   margin-bottom: 8px;
   line-height: 1;
@@ -578,11 +578,11 @@ export const DataTable = styled.table`
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(1, 255, 179, 0.07);
 `;
 
 export const TableHeader = styled.thead`
-  background: linear-gradient(135deg, #0b4200 0%, #28a745 100%);
+  background: linear-gradient(135deg, #3CAD8C 0%, #3CAD8C 100%);
 `;
 
 export const TableRow = styled.tr<{ $isHeader?: boolean }>`
@@ -648,7 +648,7 @@ export const EmptyState = styled.div`
   color: #999;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 
   svg {
     margin-bottom: 24px;
@@ -680,12 +680,12 @@ export const LoadingState = styled.div`
   text-align: center;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
 
   h3 {
     font-size: 1.3rem;
     font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-    color: #0b4200;
+    color: #3CAD8C;
     margin: 16px 0 8px 0;
     font-weight: 600;
   }

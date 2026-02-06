@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import CancelModal from '@/components/modals/cancelModal';
+import ConfirmModal from '@/components/modals/confirmModal';
+import SucessModal from '@/components/modals/sucessModal';
 import { 
   Container, 
   Header,
@@ -269,6 +272,34 @@ export default function Clientes() {
     status: 'active' as 'active' | 'inactive'
   });
 
+  const [originalClient, setOriginalClient] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    cpf: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    category: '',
+    status: 'active' as 'active' | 'inactive'
+  });
+
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Estados dos modais
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Verificar se houve alterações
+  useEffect(() => {
+    if (isModalOpen) {
+      const changed = JSON.stringify(newClient) !== JSON.stringify(originalClient);
+      setHasChanges(changed);
+    }
+  }, [newClient, originalClient, isModalOpen]);
+
   // Funções de formatação
   const formatPhone = (value: string): string => {
     const numbers = value.replace(/\D/g, '');
@@ -366,43 +397,58 @@ export default function Clientes() {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const handleAddClient = () => {
+  const handleCancelClick = () => {
+    if (hasChanges) {
+      setShowCancelModal(true);
+    } else {
+      handleCloseModal();
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false);
+    handleCloseModal();
+  };
+
+  const handleSubmitClick = () => {
     if (!newClient.name || !newClient.email || !newClient.phone || !newClient.cpf) {
       alert('Por favor, preencha todos os campos obrigatórios!');
       return;
     }
 
-    const client: Client = {
-      id: clients.length + 1,
-      name: newClient.name,
-      email: newClient.email,
-      phone: newClient.phone,
-      cpf: newClient.cpf,
-      endereco: newClient.endereco,
-      cidade: newClient.cidade,
-      estado: newClient.estado,
-      cep: newClient.cep,
-      status: newClient.status,
-      purchaseCount: 0,
-      totalSpent: 0,
-      registrationDate: new Date().toISOString().split('T')[0],
-      category: newClient.category
-    };
+    setShowConfirmModal(true);
+  };
 
-    setClients([...clients, client]);
-    setIsModalOpen(false);
-    setNewClient({ 
-      name: '', 
-      email: '', 
-      phone: '', 
-      cpf: '',
-      endereco: '',
-      cidade: '',
-      estado: '',
-      cep: '',
-      category: '',
-      status: 'active'
-    });
+  const handleConfirmSave = () => {
+    setShowConfirmModal(false);
+
+    // Simular salvamento
+    setTimeout(() => {
+      const client: Client = {
+        id: clients.length + 1,
+        name: newClient.name,
+        email: newClient.email,
+        phone: newClient.phone,
+        cpf: newClient.cpf,
+        endereco: newClient.endereco,
+        cidade: newClient.cidade,
+        estado: newClient.estado,
+        cep: newClient.cep,
+        status: newClient.status,
+        purchaseCount: 0,
+        totalSpent: 0,
+        registrationDate: new Date().toISOString().split('T')[0],
+        category: newClient.category
+      };
+
+      setClients([...clients, client]);
+      setShowSuccessModal(true);
+    }, 500);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    handleCloseModal();
   };
 
   const handleCloseModal = () => {
@@ -419,6 +465,38 @@ export default function Clientes() {
       category: '',
       status: 'active'
     });
+    setOriginalClient({
+      name: '', 
+      email: '', 
+      phone: '', 
+      cpf: '',
+      endereco: '',
+      cidade: '',
+      estado: '',
+      cep: '',
+      category: '',
+      status: 'active'
+    });
+    setHasChanges(false);
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    const emptyClient = {
+      name: '', 
+      email: '', 
+      phone: '', 
+      cpf: '',
+      endereco: '',
+      cidade: '',
+      estado: '',
+      cep: '',
+      category: '',
+      status: 'active' as 'active' | 'inactive'
+    };
+    setNewClient(emptyClient);
+    setOriginalClient(emptyClient);
+    setHasChanges(false);
   };
 
   const handleViewDetails = (clientId: number) => {
@@ -574,7 +652,7 @@ export default function Clientes() {
             )}
           </FilterGroup>
 
-          <AddButton onClick={() => setIsModalOpen(true)}>
+          <AddButton onClick={handleOpenModal}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
@@ -662,11 +740,11 @@ export default function Clientes() {
 
         {isModalOpen && (
           <Modal>
-            <ModalOverlay onClick={handleCloseModal} />
+            <ModalOverlay onClick={handleCancelClick} />
             <ModalContent>
               <ModalHeader>
                 <ModalTitle>Adicionar Novo Cliente</ModalTitle>
-                <ModalClose onClick={handleCloseModal}>
+                <ModalClose onClick={handleCancelClick}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -791,12 +869,41 @@ export default function Clientes() {
               </ModalBody>
 
               <ModalFooter>
-                <CancelButton onClick={handleCloseModal}>Cancelar</CancelButton>
-                <SubmitButton onClick={handleAddClient}>Adicionar Cliente</SubmitButton>
+                <CancelButton onClick={handleCancelClick}>Cancelar</CancelButton>
+                <SubmitButton onClick={handleSubmitClick}>Adicionar Cliente</SubmitButton>
               </ModalFooter>
             </ModalContent>
           </Modal>
         )}
+
+        {/* Modal de Cancelar Cadastro */}
+        <CancelModal
+          isOpen={showCancelModal}
+          title="Cancelar Cadastro"
+          message="Tem certeza que deseja cancelar? Todos os dados preenchidos serão perdidos."
+          onConfirm={handleConfirmCancel}
+          onCancel={() => setShowCancelModal(false)}
+        />
+
+        {/* Modal de Confirmar Cadastro */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          title="Confirmar Cadastro"
+          message="Deseja realmente cadastrar este cliente?"
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+
+        {/* Modal de Sucesso */}
+        <SucessModal
+          isOpen={showSuccessModal}
+          title="Cliente Cadastrado!"
+          message="O cliente foi cadastrado com sucesso no sistema."
+          buttonText="Continuar"
+          onClose={handleSuccessClose}
+        />
       </Container>
     </Navbar>
   );
