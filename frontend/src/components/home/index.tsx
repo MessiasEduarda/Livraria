@@ -303,7 +303,7 @@ export default function Home() {
               {isFilterOpen && (
                 <FilterList>
                   <FilterOption 
-                    active={!selectedCategory}
+                    $active={!selectedCategory}
                     onClick={() => {
                       setSelectedCategory('');
                       setIsFilterOpen(false);
@@ -314,7 +314,7 @@ export default function Home() {
                   {categories.map(category => (
                     <FilterOption
                       key={category}
-                      active={selectedCategory === category}
+                      $active={selectedCategory === category}
                       onClick={() => {
                         setSelectedCategory(category);
                         setIsFilterOpen(false);

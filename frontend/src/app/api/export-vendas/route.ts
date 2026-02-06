@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     doc.setFontSize(14);
     doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
     doc.setFont('helvetica', 'normal');
-    doc.text('Entre Capítulos - Livraria', 105, yPosition, { align: 'center' });
+    doc.text('Entre Capítulos - Sistema de Gestão', 105, yPosition, { align: 'center' });
 
     yPosition += 7;
     const now = new Date();
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       doc.setFontSize(14);
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFont('helvetica', 'bold');
-      doc.text('Filtros Aplicados:', 20, yPosition);
+      doc.text('Filtros Aplicados', 20, yPosition);
       
       yPosition += 7;
       doc.setFontSize(10);
@@ -117,9 +117,9 @@ export async function POST(request: NextRequest) {
 
     // Tabela de estatísticas
     const statsTableData = [
-      ['Receita Total', `R$ ${stats.totalRevenue.toFixed(2)}`],
+      ['Receita Total', `R$ ${stats.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
       ['Vendas Concluídas', `${stats.completedSales}`],
-      ['Ticket Médio', `R$ ${stats.averageTicket.toFixed(2)}`],
+      ['Ticket Médio', `R$ ${stats.averageTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
       ['Total de Livros Vendidos', `${stats.totalItems}`]
     ];
 
@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
         fillColor: lightGray
       },
       columnStyles: {
-        0: { cellWidth: 95 },
-        1: { cellWidth: 95, halign: 'center' }
+        0: { halign: 'left' },
+        1: { halign: 'center' }
       },
       margin: { left: 20, right: 20 }
     });
@@ -187,10 +187,13 @@ export async function POST(request: NextRequest) {
         sale.customer,
         sale.category,
         itemsText,
-        `R$ ${sale.total.toFixed(2)}`,
+        `R$ ${sale.total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         statusMap[sale.status] || sale.status
       ];
     });
+
+    // Largura total disponível: 210mm (A4) - 40mm (margens) = 170mm
+    const totalWidth = 170;
 
     autoTable(doc, {
       startY: yPosition,
@@ -211,13 +214,13 @@ export async function POST(request: NextRequest) {
         fillColor: lightGray
       },
       columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 35 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 45 },
-        5: { cellWidth: 25, halign: 'right' },
-        6: { cellWidth: 25 }
+        0: { cellWidth: 13 },      // ID: ~7.6%
+        1: { cellWidth: 22 },      // Data/Hora: ~13%
+        2: { cellWidth: 30 },      // Cliente: ~17.6%
+        3: { cellWidth: 22 },      // Categoria: ~13%
+        4: { cellWidth: 50 },      // Itens: ~29.4%
+        5: { cellWidth: 20, halign: 'right' },  // Total: ~11.8%
+        6: { cellWidth: 13 }       // Status: ~7.6%
       },
       margin: { left: 20, right: 20 }
     });
@@ -230,13 +233,13 @@ export async function POST(request: NextRequest) {
       doc.setTextColor(153, 153, 153);
       doc.setFont('helvetica', 'normal');
       doc.text(
-        'Este relatório foi gerado automaticamente pelo sistema de gerenciamento Entre Capítulos.',
+        'Relatório gerado automaticamente pelo Sistema de Gestão de Livraria',
         105,
         280,
         { align: 'center' }
       );
       doc.text(
-        'Para mais informações, entre em contato com o suporte.',
+        '© 2026 Entre Capítulos - Todos os direitos reservados',
         105,
         285,
         { align: 'center' }
