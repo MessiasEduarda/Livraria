@@ -55,11 +55,12 @@ export const Badge = styled.div`
 
 export const MainContent = styled.div`
   display: grid;
-  grid-template-columns: 1fr 450px;
+  grid-template-columns: 1fr 450px;  // Layout de 2 colunas
   gap: 24px;
+  width: 100%;;
 
-  @media (max-width: 1400px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 1024px) {  // Mudado de 1400px para 1024px
+    grid-template-columns: 1fr;  // Só muda para 1 coluna em telas pequenas
   }
 `;
 
@@ -73,10 +74,12 @@ export const RightPanel = styled.div`
   position: sticky;
   top: 100px;
   height: fit-content;
+  min-width: 450px;  // NOVO: garante largura mínima
 
-  @media (max-width: 1400px) {
+  @media (max-width: 1024px) {
     position: relative;
     top: 0;
+    min-width: auto;
   }
 `;
 
