@@ -1,6 +1,6 @@
 // Tipos de erro
 export type ValidationError = {
-  field: 'clientName' | 'clientEmail' | 'clientPhone' | 'clientCPF' | 'cart' | 'discount' | 'total' | 'general';
+  field: 'clientName' | 'clientEmail' | 'clientPhone' | 'clientCPF' | 'cart' | 'discount' | 'total' | 'seller' | 'general';
   message: string;
 };
 
@@ -124,6 +124,18 @@ export function validateTotal(total: number): ValidationError | null {
   return null;
 }
 
+// Validação do vendedor
+export function validateSeller(sellerId: number | null): ValidationError | null {
+  if (!sellerId) {
+    return {
+      field: 'seller',
+      message: 'Por favor, selecione o vendedor responsável pela venda'
+    };
+  }
+
+  return null;
+}
+
 // Validação completa do formulário de venda
 export function validateSaleForm(data: {
   clientName: string;
@@ -134,6 +146,7 @@ export function validateSaleForm(data: {
   discount: string;
   subtotal: number;
   total: number;
+  sellerId: number | null;
 }): ValidationError | null {
   const cartError = validateCart(data.cartLength);
   if (cartError) return cartError;
@@ -156,6 +169,9 @@ export function validateSaleForm(data: {
   const totalError = validateTotal(data.total);
   if (totalError) return totalError;
 
+  const sellerError = validateSeller(data.sellerId);
+  if (sellerError) return sellerError;
+
   return null;
 }
 
@@ -171,4 +187,5 @@ export const ERROR_MESSAGES = {
   DISCOUNT_NEGATIVE: 'O desconto não pode ser negativo',
   DISCOUNT_EXCEEDS_SUBTOTAL: 'O desconto não pode ser maior que o subtotal',
   TOTAL_INVALID: 'O valor total deve ser maior que zero',
+  SELLER_REQUIRED: 'Por favor, selecione o vendedor responsável pela venda',
 };

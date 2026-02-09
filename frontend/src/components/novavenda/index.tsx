@@ -14,6 +14,7 @@ import {
   validateCart,
   validateDiscount,
   validateTotal,
+  validateSeller,
   validateSaleForm
 } from './validation';
 import {
@@ -151,6 +152,7 @@ export default function NovaVenda() {
   const [clientPhoneTouched, setClientPhoneTouched] = useState(false);
   const [clientCPFTouched, setClientCPFTouched] = useState(false);
   const [discountTouched, setDiscountTouched] = useState(false);
+  const [sellerTouched, setSellerTouched] = useState(false);
 
   const filteredBooks = books.filter(book => 
     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,6 +228,12 @@ export default function NovaVenda() {
     }
   }
 
+  function handleSellerBlur() {
+    setSellerTouched(true);
+    const error = validateSeller(selectedSeller);
+    setSellerError(error ? error.message : '');
+  }
+
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhone(value);
     setClientPhone(formatted);
@@ -259,6 +267,7 @@ export default function NovaVenda() {
   const handleSellerSelect = (sellerId: number) => {
     setSelectedSeller(sellerId);
     setIsSellerDropdownOpen(false);
+    setSellerTouched(true);
     setSellerError('');
   };
 
@@ -356,15 +365,10 @@ export default function NovaVenda() {
     setClientPhoneTouched(true);
     setClientCPFTouched(true);
     setDiscountTouched(true);
+    setSellerTouched(true);
 
     // Limpa erros anteriores
     clearAllErrors();
-
-    // Valida o vendedor
-    if (!selectedSeller) {
-      setSellerError('Por favor, selecione o vendedor responsável pela venda');
-      return;
-    }
 
     // Valida o formulário completo
     const validationError = validateSaleForm({
@@ -375,7 +379,8 @@ export default function NovaVenda() {
       cartLength: cart.length,
       discount,
       subtotal: calculateSubtotal(),
-      total: calculateTotal()
+      total: calculateTotal(),
+      sellerId: selectedSeller
     });
 
     if (validationError) {
@@ -390,6 +395,8 @@ export default function NovaVenda() {
         setClientCPFError(validationError.message);
       } else if (validationError.field === 'discount') {
         setDiscountError(validationError.message);
+      } else if (validationError.field === 'seller') {
+        setSellerError(validationError.message);
       }
       return;
     }
@@ -495,6 +502,7 @@ export default function NovaVenda() {
         setClientPhoneTouched(false);
         setClientCPFTouched(false);
         setDiscountTouched(false);
+        setSellerTouched(false);
 
         setShowSuccessModal(true);
       } else {
@@ -619,6 +627,7 @@ export default function NovaVenda() {
                 <SellerDropdown>
                   <SellerButton 
                     onClick={() => setIsSellerDropdownOpen(!isSellerDropdownOpen)}
+                    onBlur={handleSellerBlur}
                     $hasError={!!sellerError}
                   >
                     <span>{getSelectedSellerName()}</span>
