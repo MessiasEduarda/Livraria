@@ -51,10 +51,10 @@ async function generatePDF(data: ReportData) {
   const stats = calculateStats(data.salesData);
 
   // Cores padronizadas com o recibo
-  const primaryColor = [60, 173, 140]; // #3CAD8C
-  const secondaryColor = [102, 102, 102];
-  const lightGray = [248, 249, 250];
-  const darkGray = [26, 26, 26];
+  const primaryColor: [number, number, number] = [60, 173, 140]; // #3CAD8C
+  const secondaryColor: [number, number, number] = [102, 102, 102];
+  const lightGray: [number, number, number] = [248, 249, 250];
+  const darkGray: [number, number, number] = [26, 26, 26];
 
   let yPosition = 20;
 
