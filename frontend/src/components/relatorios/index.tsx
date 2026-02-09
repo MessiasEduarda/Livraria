@@ -695,7 +695,7 @@ export default function Relatorios() {
                               cx="50%"
                               cy="50%"
                               labelLine={true}
-                              label={({ name, percentage }) => `${name}: ${percentage}`}
+                              label={({ payload }) => `${payload.name}: ${payload.percentage}`}
                               outerRadius={120}
                               fill="#8884d8"
                               dataKey="value"

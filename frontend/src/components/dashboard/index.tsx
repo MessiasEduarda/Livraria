@@ -367,7 +367,7 @@ export default function Dashboard() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                         padding: '12px'
                       }}
-                      formatter={(value: number) => [`R$ ${formatCurrency(value)}`, 'Vendas']}
+                      formatter={(value) => `R$ ${formatCurrency(typeof value === 'number' ? value : 0)}`}
                       labelStyle={{ fontWeight: 600, marginBottom: '4px' }}
                     />
                     <Area 
@@ -396,7 +396,7 @@ export default function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={true}
-                      label={({ name, percentage }) => `${name}: ${percentage}%`}
+                      label={({ payload }) => `${payload.name}: ${payload.percentage}%`}
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
@@ -415,7 +415,7 @@ export default function Dashboard() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                         padding: '12px'
                       }}
-                      formatter={(value: number) => [`R$ ${formatCurrency(value)}`, 'Vendas']}
+                      formatter={(value) => `R$ ${formatCurrency(typeof value === 'number' ? value : 0)}`}
                     />
                   </PieChart>
                 </ResponsiveContainer>

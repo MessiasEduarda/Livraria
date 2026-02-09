@@ -218,7 +218,7 @@ async function generatePDF(data: ReportData) {
   });
 
   // ========== RODAPÉ ==========
-  const pageCount = doc.getNumberOfPages();
+  const pageCount = (doc as any).getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     
