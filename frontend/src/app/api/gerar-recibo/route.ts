@@ -5,7 +5,7 @@ import autoTable from 'jspdf-autotable';
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { client, items, subtotal, discount, total, paymentMethod, notes, date } = data;
+    const { client, seller, items, subtotal, discount, total, paymentMethod, notes, date } = data;
 
     // Criar um novo documento PDF
     const doc = new jsPDF({
@@ -73,31 +73,35 @@ export async function POST(request: NextRequest) {
     doc.setFont('helvetica', 'normal');
     doc.text(`Gerado em: ${formattedDate} às ${formattedTime}`, 105, yPosition, { align: 'center' });
 
-    // ========== INFORMAÇÕES DO CLIENTE ==========
+    // ========== INFORMAÇÕES DO CLIENTE E VENDEDOR ==========
     yPosition += 15;
     doc.setFontSize(12);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont('helvetica', 'bold');
-    doc.text('Informações do Cliente', 20, yPosition);
+    doc.text('Informações da Venda', 20, yPosition);
 
     yPosition += 7;
 
-    // Box de informações do cliente
+    // Box de informações (ajustado para 44mm de altura para 6 linhas)
     doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
     doc.setDrawColor(224, 224, 224);
-    doc.roundedRect(20, yPosition, 170, 30, 2, 2, 'FD');
+    doc.roundedRect(20, yPosition, 170, 44, 2, 2, 'FD');
 
     yPosition += 7;
+    
+    // CLIENTE
     doc.setFontSize(10);
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
     doc.setFont('helvetica', 'bold');
-    doc.text('Nome:', 25, yPosition);
+    doc.text('Cliente:', 25, yPosition);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(51, 51, 51);
     doc.text(client.name, 45, yPosition);
 
     yPosition += 7;
+    
+    // CPF
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
     doc.text('CPF:', 25, yPosition);
@@ -106,15 +110,9 @@ export async function POST(request: NextRequest) {
     doc.setTextColor(51, 51, 51);
     doc.text(client.cpf, 45, yPosition);
 
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    doc.text('Telefone:', 110, yPosition);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 51, 51);
-    doc.text(client.phone, 135, yPosition);
-
     yPosition += 7;
+    
+    // EMAIL
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
     doc.text('Email:', 25, yPosition);
@@ -122,6 +120,28 @@ export async function POST(request: NextRequest) {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(51, 51, 51);
     doc.text(client.email || 'Não informado', 45, yPosition);
+
+    yPosition += 7;
+    
+    // TELEFONE
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text('Telefone:', 25, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    doc.text(client.phone, 45, yPosition);
+
+    yPosition += 7;
+    
+    // VENDEDOR
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text('Vendedor:', 25, yPosition);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    doc.text(seller || 'Não informado', 45, yPosition);
 
     // ========== PRODUTOS ==========
     yPosition += 15;

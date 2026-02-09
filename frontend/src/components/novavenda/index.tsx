@@ -70,7 +70,11 @@ import {
   DiscountInput,
   Notes,
   FormRow,
-  FieldError
+  FieldError,
+  SellerDropdown,
+  SellerButton,
+  SellerList,
+  SellerOption
 } from './styles';
 
 interface Book {
@@ -87,6 +91,11 @@ interface CartItem extends Book {
   quantity: number;
 }
 
+interface Seller {
+  id: number;
+  name: string;
+}
+
 const booksData: Book[] = [
   { id: 1, title: "1984", author: "George Orwell", price: 45.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 12 },
   { id: 2, title: "Clean Code", author: "Robert Martin", price: 89.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 8 },
@@ -98,9 +107,15 @@ const booksData: Book[] = [
   { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
 ];
 
+const sellersData: Seller[] = [
+  { id: 1, name: "Maria" },
+  { id: 2, name: "Henrique" }
+];
+
 export default function NovaVenda() {
   const router = useRouter();
   const [books] = useState<Book[]>(booksData);
+  const [sellers] = useState<Seller[]>(sellersData);
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   
@@ -111,6 +126,8 @@ export default function NovaVenda() {
   const [clientCPF, setClientCPF] = useState('');
   
   // Dados da venda
+  const [selectedSeller, setSelectedSeller] = useState<number | null>(null);
+  const [isSellerDropdownOpen, setIsSellerDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('dinheiro');
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
@@ -126,6 +143,7 @@ export default function NovaVenda() {
   const [clientPhoneError, setClientPhoneError] = useState<string>('');
   const [clientCPFError, setClientCPFError] = useState<string>('');
   const [discountError, setDiscountError] = useState<string>('');
+  const [sellerError, setSellerError] = useState<string>('');
 
   // Estados para controlar se o campo foi tocado
   const [clientNameTouched, setClientNameTouched] = useState(false);
@@ -164,6 +182,7 @@ export default function NovaVenda() {
     setClientPhoneError('');
     setClientCPFError('');
     setDiscountError('');
+    setSellerError('');
   }
 
   // Validações individuais em tempo real
@@ -237,6 +256,17 @@ export default function NovaVenda() {
     }
   };
 
+  const handleSellerSelect = (sellerId: number) => {
+    setSelectedSeller(sellerId);
+    setIsSellerDropdownOpen(false);
+    setSellerError('');
+  };
+
+  const getSelectedSellerName = () => {
+    const seller = sellers.find(s => s.id === selectedSeller);
+    return seller ? seller.name : 'Selecione o vendedor';
+  };
+
   const addToCart = (book: Book) => {
     const existingItem = cart.find(item => item.id === book.id);
     
@@ -296,7 +326,7 @@ export default function NovaVenda() {
   };
 
   const hasFormData = () => {
-    return cart.length > 0 || clientName || clientEmail || clientPhone || clientCPF || discount || notes;
+    return cart.length > 0 || clientName || clientEmail || clientPhone || clientCPF || discount || notes || selectedSeller !== null;
   };
 
   const handleCancelClick = () => {
@@ -329,6 +359,12 @@ export default function NovaVenda() {
 
     // Limpa erros anteriores
     clearAllErrors();
+
+    // Valida o vendedor
+    if (!selectedSeller) {
+      setSellerError('Por favor, selecione o vendedor responsável pela venda');
+      return;
+    }
 
     // Valida o formulário completo
     const validationError = validateSaleForm({
@@ -364,6 +400,8 @@ export default function NovaVenda() {
   const handleConfirmSale = async () => {
     setShowConfirmModal(false);
 
+    const seller = sellers.find(s => s.id === selectedSeller);
+
     const client = {
       name: clientName,
       email: clientEmail,
@@ -373,6 +411,7 @@ export default function NovaVenda() {
     
     const saleData = {
       client: client,
+      seller: seller?.name || '',
       items: cart,
       subtotal: calculateSubtotal(),
       discount: calculateDiscount(),
@@ -446,6 +485,7 @@ export default function NovaVenda() {
         setClientEmail('');
         setClientPhone('');
         setClientCPF('');
+        setSelectedSeller(null);
         setPaymentMethod('dinheiro');
         setDiscount('');
         setNotes('');
@@ -570,6 +610,45 @@ export default function NovaVenda() {
                       <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
                     {clientEmailError}
+                  </FieldError>
+                )}
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Vendedor *</Label>
+                <SellerDropdown>
+                  <SellerButton 
+                    onClick={() => setIsSellerDropdownOpen(!isSellerDropdownOpen)}
+                    $hasError={!!sellerError}
+                  >
+                    <span>{getSelectedSellerName()}</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d={isSellerDropdownOpen ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/>
+                    </svg>
+                  </SellerButton>
+                  
+                  {isSellerDropdownOpen && (
+                    <SellerList>
+                      {sellers.map(seller => (
+                        <SellerOption
+                          key={seller.id}
+                          $active={selectedSeller === seller.id}
+                          onClick={() => handleSellerSelect(seller.id)}
+                        >
+                          {seller.name}
+                        </SellerOption>
+                      ))}
+                    </SellerList>
+                  )}
+                </SellerDropdown>
+                {sellerError && (
+                  <FieldError>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {sellerError}
                   </FieldError>
                 )}
               </FormGroup>

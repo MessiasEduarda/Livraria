@@ -126,7 +126,7 @@ export const Input = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
   border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
-  border-radius: 10px;
+  border-radius: 1000px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   transition: all 0.3s ease;
@@ -167,6 +167,88 @@ export const Select = styled.select`
   }
 `;
 
+export const SellerDropdown = styled.div`
+  position: relative;
+`;
+
+export const SellerButton = styled.button<{ $hasError?: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
+  border-radius: 1000px;
+  background-color: white;
+  color: #333;
+  font-size: 0.95rem;
+  font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    background-color: ${props => props.$hasError ? '#fff5f5' : '#f8fdf5'};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? 'rgba(171, 3, 29, 0.1)' : 'rgba(60, 173, 140, 0.1)'};
+  }
+
+  svg {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+`;
+
+export const SellerList = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+  animation: slideDown 0.2s ease;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+export const SellerOption = styled.div<{ $active?: boolean }>`
+  padding: 12px 16px;
+  color: ${props => props.$active ? '#3CAD8C' : '#333'};
+  font-weight: ${props => props.$active ? '600' : '400'};
+  font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
+  background-color: ${props => props.$active ? '#e8f5e0' : 'white'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: #f8fdf5;
+    color: #3CAD8C;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+  }
+`;
+
 export const SearchBar = styled.div`
   position: relative;
   margin-bottom: 20px;
@@ -186,7 +268,7 @@ export const SearchInput = styled.input`
   width: 100%;
   padding: 12px 16px 12px 48px;
   border: 1px solid #ddd;
-  border-radius: 50px;
+  border-radius: 1000px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   transition: all 0.3s ease;
@@ -513,7 +595,7 @@ export const DiscountInput = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
   border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
-  border-radius: 10px;
+  border-radius: 1000px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   transition: all 0.3s ease;
