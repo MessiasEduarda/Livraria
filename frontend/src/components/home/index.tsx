@@ -6,7 +6,14 @@ import Navbar from '@/components/navbar';
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
-import ErrorModal from '@/components/modals/errorModal';
+import {
+  validateTitle,
+  validateAuthor,
+  validateCategory,
+  validatePrice,
+  validateStock,
+  validateBookForm
+} from './validation';
 import { 
   Container, 
   Header,
@@ -49,7 +56,8 @@ import {
   ImagePreview,
   ModalFooter,
   CancelButton,
-  SubmitButton
+  SubmitButton,
+  FieldError
 } from './styles';
 
 interface Book {
@@ -86,9 +94,6 @@ export default function Home() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [errorTitle, setErrorTitle] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   
   const [newBook, setNewBook] = useState({
     title: '',
@@ -98,6 +103,20 @@ export default function Home() {
     stock: '',
     cover: ''
   });
+
+  // Estados de erro
+  const [titleError, setTitleError] = useState<string>('');
+  const [authorError, setAuthorError] = useState<string>('');
+  const [categoryError, setCategoryError] = useState<string>('');
+  const [priceError, setPriceError] = useState<string>('');
+  const [stockError, setStockError] = useState<string>('');
+
+  // Estados para controlar se o campo foi tocado
+  const [titleTouched, setTitleTouched] = useState(false);
+  const [authorTouched, setAuthorTouched] = useState(false);
+  const [categoryTouched, setCategoryTouched] = useState(false);
+  const [priceTouched, setPriceTouched] = useState(false);
+  const [stockTouched, setStockTouched] = useState(false);
 
   const filteredBooks = books.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,82 +149,103 @@ export default function Home() {
     }
   };
 
-  const showError = (title: string, message: string) => {
-    setErrorTitle(title);
-    setErrorMessage(message);
-    setIsErrorModalOpen(true);
-  };
+  // Limpa todos os erros
+  function clearAllErrors() {
+    setTitleError('');
+    setAuthorError('');
+    setCategoryError('');
+    setPriceError('');
+    setStockError('');
+  }
 
-  const validateForm = (): boolean => {
-    // Validar título
-    if (!newBook.title.trim()) {
-      showError('Título Obrigatório', 'O título do livro é obrigatório para cadastrar o produto.');
-      return false;
+  // Validações individuais em tempo real (só após o campo ser tocado)
+  function handleTitleBlur() {
+    setTitleTouched(true);
+    if (newBook.title.trim()) {
+      const error = validateTitle(newBook.title);
+      setTitleError(error ? error.message : '');
     }
+  }
 
-    if (newBook.title.trim().length < 2) {
-      showError('Título Inválido', 'O título do livro deve ter pelo menos 2 caracteres.');
-      return false;
+  function handleAuthorBlur() {
+    setAuthorTouched(true);
+    if (newBook.author.trim()) {
+      const error = validateAuthor(newBook.author);
+      setAuthorError(error ? error.message : '');
     }
+  }
 
-    // Validar autor
-    if (!newBook.author.trim()) {
-      showError('Autor Obrigatório', 'O nome do autor é obrigatório para cadastrar o produto.');
-      return false;
+  function handleCategoryBlur() {
+    setCategoryTouched(true);
+    if (newBook.category) {
+      const error = validateCategory(newBook.category);
+      setCategoryError(error ? error.message : '');
     }
+  }
 
-    if (newBook.author.trim().length < 2) {
-      showError('Autor Inválido', 'O nome do autor deve ter pelo menos 2 caracteres.');
-      return false;
+  function handlePriceBlur() {
+    setPriceTouched(true);
+    if (newBook.price) {
+      const error = validatePrice(newBook.price);
+      setPriceError(error ? error.message : '');
     }
+  }
 
-    // Validar categoria
-    if (!newBook.category) {
-      showError('Categoria Obrigatória', 'Selecione uma categoria para o livro.');
-      return false;
+  function handleStockBlur() {
+    setStockTouched(true);
+    if (newBook.stock) {
+      const error = validateStock(newBook.stock);
+      setStockError(error ? error.message : '');
     }
+  }
 
-    // Validar preço
-    if (!newBook.price) {
-      showError('Preço Obrigatório', 'O preço do livro é obrigatório para cadastrar o produto.');
-      return false;
+  const handleInputChange = (field: string, value: string) => {
+    setNewBook({ ...newBook, [field]: value });
+
+    // Limpa erro do campo específico se ele foi tocado
+    if (field === 'title' && titleTouched) {
+      setTitleError('');
+    } else if (field === 'author' && authorTouched) {
+      setAuthorError('');
+    } else if (field === 'category' && categoryTouched) {
+      setCategoryError('');
+    } else if (field === 'price' && priceTouched) {
+      setPriceError('');
+    } else if (field === 'stock' && stockTouched) {
+      setStockError('');
     }
-
-    const priceValue = parseFloat(newBook.price);
-    if (isNaN(priceValue) || priceValue <= 0) {
-      showError('Preço Inválido', 'Digite um preço válido maior que zero. Exemplo: 49.90');
-      return false;
-    }
-
-    if (priceValue > 9999.99) {
-      showError('Preço Inválido', 'O preço não pode ser maior que R$ 9.999,99.');
-      return false;
-    }
-
-    // Validar estoque
-    if (!newBook.stock) {
-      showError('Estoque Obrigatório', 'A quantidade em estoque é obrigatória para cadastrar o produto.');
-      return false;
-    }
-
-    const stockValue = parseInt(newBook.stock);
-    if (isNaN(stockValue) || stockValue < 0) {
-      showError('Estoque Inválido', 'Digite uma quantidade de estoque válida maior ou igual a zero.');
-      return false;
-    }
-
-    if (stockValue > 9999) {
-      showError('Estoque Inválido', 'A quantidade em estoque não pode ser maior que 9.999 unidades.');
-      return false;
-    }
-
-    return true;
   };
 
   const handleAddBookClick = () => {
-    if (!validateForm()) {
+    // Marca todos os campos como tocados
+    setTitleTouched(true);
+    setAuthorTouched(true);
+    setCategoryTouched(true);
+    setPriceTouched(true);
+    setStockTouched(true);
+
+    // Limpa erros anteriores
+    clearAllErrors();
+
+    // Valida o formulário completo
+    const validationError = validateBookForm(newBook);
+
+    if (validationError) {
+      // Define o erro no campo apropriado
+      if (validationError.field === 'title') {
+        setTitleError(validationError.message);
+      } else if (validationError.field === 'author') {
+        setAuthorError(validationError.message);
+      } else if (validationError.field === 'category') {
+        setCategoryError(validationError.message);
+      } else if (validationError.field === 'price') {
+        setPriceError(validationError.message);
+      } else if (validationError.field === 'stock') {
+        setStockError(validationError.message);
+      }
       return;
     }
+
     setIsConfirmModalOpen(true);
   };
 
@@ -225,6 +265,12 @@ export default function Home() {
     setIsModalOpen(false);
     setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
     setImagePreview('');
+    clearAllErrors();
+    setTitleTouched(false);
+    setAuthorTouched(false);
+    setCategoryTouched(false);
+    setPriceTouched(false);
+    setStockTouched(false);
     setIsSuccessModalOpen(true);
   };
 
@@ -243,6 +289,12 @@ export default function Home() {
       setIsModalOpen(false);
       setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
       setImagePreview('');
+      clearAllErrors();
+      setTitleTouched(false);
+      setAuthorTouched(false);
+      setCategoryTouched(false);
+      setPriceTouched(false);
+      setStockTouched(false);
     }
   };
 
@@ -251,6 +303,12 @@ export default function Home() {
     setIsModalOpen(false);
     setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
     setImagePreview('');
+    clearAllErrors();
+    setTitleTouched(false);
+    setAuthorTouched(false);
+    setCategoryTouched(false);
+    setPriceTouched(false);
+    setStockTouched(false);
   };
 
   const handleCancelClose = () => {
@@ -400,8 +458,20 @@ export default function Home() {
                     type="text"
                     placeholder="Digite o título"
                     value={newBook.title}
-                    onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    onBlur={handleTitleBlur}
+                    $hasError={!!titleError}
                   />
+                  {titleError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {titleError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -410,21 +480,45 @@ export default function Home() {
                     type="text"
                     placeholder="Digite o nome do autor"
                     value={newBook.author}
-                    onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+                    onChange={(e) => handleInputChange('author', e.target.value)}
+                    onBlur={handleAuthorBlur}
+                    $hasError={!!authorError}
                   />
+                  {authorError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {authorError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
                   <Label>Categoria *</Label>
                   <Select 
                     value={newBook.category}
-                    onChange={(e) => setNewBook({ ...newBook, category: e.target.value })}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onBlur={handleCategoryBlur}
+                    $hasError={!!categoryError}
                   >
                     <option value="">Selecione uma categoria</option>
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </Select>
+                  {categoryError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {categoryError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -435,8 +529,20 @@ export default function Home() {
                       step="0.01"
                       placeholder="0.00"
                       value={newBook.price}
-                      onChange={(e) => setNewBook({ ...newBook, price: e.target.value })}
+                      onChange={(e) => handleInputChange('price', e.target.value)}
+                      onBlur={handlePriceBlur}
+                      $hasError={!!priceError}
                     />
+                    {priceError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {priceError}
+                      </FieldError>
+                    )}
                   </FormGroup>
 
                   <FormGroup>
@@ -445,8 +551,20 @@ export default function Home() {
                       type="number"
                       placeholder="0"
                       value={newBook.stock}
-                      onChange={(e) => setNewBook({ ...newBook, stock: e.target.value })}
+                      onChange={(e) => handleInputChange('stock', e.target.value)}
+                      onBlur={handleStockBlur}
+                      $hasError={!!stockError}
                     />
+                    {stockError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {stockError}
+                      </FieldError>
+                    )}
                   </FormGroup>
                 </div>
 
@@ -485,13 +603,6 @@ export default function Home() {
             </ModalContent>
           </Modal>
         )}
-
-        <ErrorModal
-          isOpen={isErrorModalOpen}
-          title={errorTitle}
-          message={errorMessage}
-          onClose={() => setIsErrorModalOpen(false)}
-        />
 
         <ConfirmModal
           isOpen={isConfirmModalOpen}

@@ -44,26 +44,27 @@ export async function POST(request: NextRequest) {
       format: 'a4'
     });
 
-    // Configurar cores
-    const primaryColor = [11, 66, 0]; // #0b4200
-    const secondaryColor = [102, 102, 102]; // #666666
-    const lightGray = [248, 249, 250]; // #f8f9fa
+    // Configurar cores (PADRONIZADAS COM O RECIBO)
+    const primaryColor = [60, 173, 140]; // #3CAD8C
+    const secondaryColor = [102, 102, 102];
+    const lightGray = [248, 249, 250];
+    const darkGray = [26, 26, 26];
 
     let yPosition = 20;
 
-    // Cabeçalho
+    // ========== CABEÇALHO ==========
     doc.setFontSize(24);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont('helvetica', 'bold');
     doc.text('Relatório de Vendas', 105, yPosition, { align: 'center' });
     
     yPosition += 10;
-    doc.setFontSize(14);
+    doc.setFontSize(10);
     doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
     doc.setFont('helvetica', 'normal');
-    doc.text('Entre Capítulos - Sistema de Gestão', 105, yPosition, { align: 'center' });
+    doc.text('Entre Capítulos - Sistema de Gestão de Livraria', 105, yPosition, { align: 'center' });
 
-    yPosition += 7;
+    yPosition += 5;
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', { 
       day: '2-digit', 
@@ -72,43 +73,68 @@ export async function POST(request: NextRequest) {
       hour: '2-digit',
       minute: '2-digit'
     });
-    doc.setFontSize(10);
     doc.text(`Gerado em: ${dateStr}`, 105, yPosition, { align: 'center' });
 
-    yPosition += 15;
+    yPosition += 8;
+    // Linha divisória
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPosition, 190, yPosition);
 
-    // Filtros aplicados
+    yPosition += 10;
+
+    // ========== FILTROS APLICADOS ==========
     if (filters.category !== 'Todas' || filters.startDate || filters.endDate) {
-      doc.setFontSize(14);
+      doc.setFontSize(12);
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFont('helvetica', 'bold');
       doc.text('Filtros Aplicados', 20, yPosition);
       
       yPosition += 7;
+      
+      // Box de filtros
+      const filterBoxHeight = (filters.category !== 'Todas' ? 7 : 0) + 
+                             (filters.startDate ? 7 : 0) + 
+                             (filters.endDate ? 7 : 0) + 7;
+      
+      doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+      doc.setDrawColor(224, 224, 224);
+      doc.roundedRect(20, yPosition, 170, filterBoxHeight, 2, 2, 'FD');
+
+      yPosition += 7;
       doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
       doc.setFont('helvetica', 'normal');
 
       if (filters.category !== 'Todas') {
-        doc.text(`• Categoria: ${filters.category}`, 25, yPosition);
-        yPosition += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Categoria:', 25, yPosition);
+        doc.setFont('helvetica', 'normal');
+        doc.text(filters.category, 50, yPosition);
+        yPosition += 7;
       }
       if (filters.startDate) {
         const startDate = new Date(filters.startDate).toLocaleDateString('pt-BR');
-        doc.text(`• Data inicial: ${startDate}`, 25, yPosition);
-        yPosition += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Data inicial:', 25, yPosition);
+        doc.setFont('helvetica', 'normal');
+        doc.text(startDate, 50, yPosition);
+        yPosition += 7;
       }
       if (filters.endDate) {
         const endDate = new Date(filters.endDate).toLocaleDateString('pt-BR');
-        doc.text(`• Data final: ${endDate}`, 25, yPosition);
-        yPosition += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Data final:', 25, yPosition);
+        doc.setFont('helvetica', 'normal');
+        doc.text(endDate, 50, yPosition);
+        yPosition += 7;
       }
 
       yPosition += 5;
     }
 
-    // Resumo Executivo
-    doc.setFontSize(14);
+    // ========== RESUMO EXECUTIVO ==========
+    doc.setFontSize(12);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont('helvetica', 'bold');
     doc.text('Resumo Executivo', 20, yPosition);
@@ -131,7 +157,7 @@ export async function POST(request: NextRequest) {
       headStyles: {
         fillColor: primaryColor,
         textColor: [255, 255, 255],
-        fontSize: 11,
+        fontSize: 10,
         fontStyle: 'bold',
         halign: 'center'
       },
@@ -150,8 +176,8 @@ export async function POST(request: NextRequest) {
 
     yPosition = (doc as any).lastAutoTable.finalY + 15;
 
-    // Detalhamento de Vendas
-    doc.setFontSize(14);
+    // ========== DETALHAMENTO DE VENDAS ==========
+    doc.setFontSize(12);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont('helvetica', 'bold');
     doc.text('Detalhamento de Vendas', 20, yPosition);
@@ -192,9 +218,6 @@ export async function POST(request: NextRequest) {
       ];
     });
 
-    // Largura total disponível: 210mm (A4) - 40mm (margens) = 170mm
-    const totalWidth = 170;
-
     autoTable(doc, {
       startY: yPosition,
       head: [['ID', 'Data/Hora', 'Cliente', 'Categoria', 'Itens', 'Total', 'Status']],
@@ -214,40 +237,50 @@ export async function POST(request: NextRequest) {
         fillColor: lightGray
       },
       columnStyles: {
-        0: { cellWidth: 13 },      // ID: ~7.6%
-        1: { cellWidth: 22 },      // Data/Hora: ~13%
-        2: { cellWidth: 30 },      // Cliente: ~17.6%
-        3: { cellWidth: 22 },      // Categoria: ~13%
-        4: { cellWidth: 50 },      // Itens: ~29.4%
-        5: { cellWidth: 20, halign: 'right' },  // Total: ~11.8%
-        6: { cellWidth: 13 }       // Status: ~7.6%
+        0: { cellWidth: 13 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 22 },
+        4: { cellWidth: 50 },
+        5: { cellWidth: 20, halign: 'right' },
+        6: { cellWidth: 13 }
       },
       margin: { left: 20, right: 20 }
     });
 
-    // Rodapé
+    // ========== RODAPÉ ==========
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
+      
+      const footerY = 280;
+      
+      // Linha divisória
+      doc.setDrawColor(224, 224, 224);
+      doc.setLineWidth(0.3);
+      doc.line(20, footerY, 190, footerY);
+
       doc.setFontSize(8);
       doc.setTextColor(153, 153, 153);
       doc.setFont('helvetica', 'normal');
       doc.text(
         'Relatório gerado automaticamente pelo Sistema de Gestão de Livraria',
         105,
-        280,
+        footerY + 5,
         { align: 'center' }
       );
       doc.text(
         '© 2026 Entre Capítulos - Todos os direitos reservados',
         105,
-        285,
+        footerY + 10,
         { align: 'center' }
       );
+      
+      doc.setFontSize(7);
       doc.text(
         `Página ${i} de ${pageCount}`,
         105,
-        290,
+        footerY + 16,
         { align: 'center' }
       );
     }

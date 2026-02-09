@@ -1,4 +1,15 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeInDown = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 export const Container = styled.div`
   margin-left: 231px;
@@ -138,12 +149,12 @@ export const FilterList = styled.div`
   }
 `;
 
-export const FilterOption = styled.div<{ active?: boolean }>`
+export const FilterOption = styled.div<{ $active?: boolean }>`
   padding: 12px 20px;
-  color: ${props => props.active ? '#3CAD8C' : '#333'};
-  font-weight: ${props => props.active ? '600' : '400'};
+  color: ${props => props.$active ? '#3CAD8C' : '#333'};
+  font-weight: ${props => props.$active ? '600' : '400'};
   font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
-  background-color: ${props => props.active ? '#f3e8ff' : 'white'};
+  background-color: ${props => props.$active ? '#f3e8ff' : 'white'};
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.9rem;
@@ -172,7 +183,6 @@ export const ClearFilter = styled.button`
 
   &:hover {
     background-color: #dc3545;
-    
     color: white;
   }
 `;
@@ -468,10 +478,10 @@ export const Label = styled.label`
   margin-bottom: 8px;
 `;
 
-export const Input = styled.input`
+export const Input = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #ddd;
+  border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
@@ -480,8 +490,8 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #3CAD8C;
-    box-shadow: 0 0 0 3px rgba(1, 255, 179, 0.07);
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? 'rgba(171, 3, 29, 0.1)' : 'rgba(1, 255, 179, 0.07)'};
   }
 
   &::placeholder {
@@ -489,10 +499,10 @@ export const Input = styled.input`
   }
 `;
 
-export const Select = styled.select`
+export const Select = styled.select<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #ddd;
+  border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
@@ -503,8 +513,8 @@ export const Select = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #3CAD8C;
-    box-shadow: 0 0 0 3px rgba(101, 0, 217, 0.1);
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? 'rgba(171, 3, 29, 0.1)' : 'rgba(101, 0, 217, 0.1)'};
   }
 `;
 
@@ -577,5 +587,24 @@ export const SubmitButton = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+`;
+
+export const FieldError = styled.div`
+  padding: 8px 12px;
+  background-color: transparent;
+  border-left: 3px solid #ab031d;
+  border-radius: 8px;
+  color: #ff5c77;
+  font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  animation: ${fadeInDown} 0.3s ease;
+
+  svg {
+    flex-shrink: 0;
   }
 `;

@@ -50,25 +50,27 @@ async function generatePDF(data: ReportData) {
   // Calcular estatísticas reais dos dados
   const stats = calculateStats(data.salesData);
 
-  const primaryColor = [11, 66, 0];
+  // Cores padronizadas com o recibo
+  const primaryColor = [60, 173, 140]; // #3CAD8C
   const secondaryColor = [102, 102, 102];
   const lightGray = [248, 249, 250];
+  const darkGray = [26, 26, 26];
 
   let yPosition = 20;
 
-  // Cabeçalho
+  // ========== CABEÇALHO ==========
   doc.setFontSize(24);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
   doc.text('Relatório de Vendas', 105, yPosition, { align: 'center' });
   
   yPosition += 10;
-  doc.setFontSize(14);
+  doc.setFontSize(10);
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.setFont('helvetica', 'normal');
-  doc.text('Entre Capítulos - Sistema de Gestão', 105, yPosition, { align: 'center' });
+  doc.text('Entre Capítulos - Sistema de Gestão de Livraria', 105, yPosition, { align: 'center' });
 
-  yPosition += 7;
+  yPosition += 5;
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR', { 
     day: '2-digit', 
@@ -77,31 +79,58 @@ async function generatePDF(data: ReportData) {
     hour: '2-digit',
     minute: '2-digit'
   });
-  doc.setFontSize(10);
   doc.text(`Gerado em: ${dateStr}`, 105, yPosition, { align: 'center' });
 
-  yPosition += 15;
+  yPosition += 8;
+  // Linha divisória
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setLineWidth(0.5);
+  doc.line(20, yPosition, 190, yPosition);
 
-  // Informações do Relatório
-  doc.setFontSize(14);
+  yPosition += 10;
+
+  // ========== INFORMAÇÕES DO RELATÓRIO ==========
+  doc.setFontSize(12);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
   doc.text('Informações do Relatório', 20, yPosition);
   
   yPosition += 7;
+
+  // Box de informações
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.setDrawColor(224, 224, 224);
+  doc.roundedRect(20, yPosition, 170, 28, 2, 2, 'FD');
+
+  yPosition += 7;
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Tipo:', 25, yPosition);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(51, 51, 51);
+  doc.text(data.reportType, 45, yPosition);
 
-  doc.text(`• Tipo: ${data.reportType}`, 25, yPosition);
-  yPosition += 5;
-  doc.text(`• Período: ${new Date(data.startDate).toLocaleDateString('pt-BR')} - ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 25, yPosition);
-  yPosition += 5;
-  doc.text(`• Categoria: ${data.category}`, 25, yPosition);
-  yPosition += 10;
+  yPosition += 7;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('Período:', 25, yPosition);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(51, 51, 51);
+  doc.text(`${new Date(data.startDate).toLocaleDateString('pt-BR')} - ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 45, yPosition);
 
-  // Resumo Executivo
-  doc.setFontSize(14);
+  yPosition += 7;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('Categoria:', 25, yPosition);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(51, 51, 51);
+  doc.text(data.category, 45, yPosition);
+
+  yPosition += 15;
+
+  // ========== RESUMO EXECUTIVO ==========
+  doc.setFontSize(12);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
   doc.text('Resumo Executivo', 20, yPosition);
@@ -120,11 +149,10 @@ async function generatePDF(data: ReportData) {
     head: [['Métrica', 'Valor']],
     body: statsTableData,
     theme: 'grid',
-    tableWidth: 'auto',
     headStyles: {
       fillColor: primaryColor,
       textColor: [255, 255, 255],
-      fontSize: 11,
+      fontSize: 10,
       fontStyle: 'bold',
       halign: 'center'
     },
@@ -143,8 +171,8 @@ async function generatePDF(data: ReportData) {
 
   yPosition = (doc as any).lastAutoTable.finalY + 15;
 
-  // Detalhamento de Vendas
-  doc.setFontSize(14);
+  // ========== DETALHAMENTO DE VENDAS ==========
+  doc.setFontSize(12);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFont('helvetica', 'bold');
   doc.text('Detalhamento de Vendas', 20, yPosition);
@@ -165,7 +193,6 @@ async function generatePDF(data: ReportData) {
     head: [['Data', 'Produto', 'Categoria', 'Qtd', 'Valor Unit.', 'Total']],
     body: salesTableData,
     theme: 'grid',
-    tableWidth: 'auto',
     headStyles: {
       fillColor: primaryColor,
       textColor: [255, 255, 255],
@@ -190,29 +217,39 @@ async function generatePDF(data: ReportData) {
     margin: { left: 20, right: 20 }
   });
 
-  // Rodapé
+  // ========== RODAPÉ ==========
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+    
+    const footerY = 280;
+    
+    // Linha divisória
+    doc.setDrawColor(224, 224, 224);
+    doc.setLineWidth(0.3);
+    doc.line(20, footerY, 190, footerY);
+
     doc.setFontSize(8);
     doc.setTextColor(153, 153, 153);
     doc.setFont('helvetica', 'normal');
     doc.text(
       'Relatório gerado automaticamente pelo Sistema de Gestão de Livraria',
       105,
-      280,
+      footerY + 5,
       { align: 'center' }
     );
     doc.text(
       '© 2026 Entre Capítulos - Todos os direitos reservados',
       105,
-      285,
+      footerY + 10,
       { align: 'center' }
     );
+    
+    doc.setFontSize(7);
     doc.text(
       `Página ${i} de ${pageCount}`,
       105,
-      290,
+      footerY + 16,
       { align: 'center' }
     );
   }
@@ -233,21 +270,21 @@ async function generateExcel(data: ReportData) {
   
   // Sheet 1: Resumo
   const summarySheet = workbook.addWorksheet('Resumo', {
-    properties: { tabColor: { argb: 'FF0b4200' } }
+    properties: { tabColor: { argb: 'FF3CAD8C' } }
   });
 
   // Título
   summarySheet.mergeCells('A1:F1');
   const titleCell = summarySheet.getCell('A1');
   titleCell.value = 'RELATÓRIO DE VENDAS';
-  titleCell.font = { size: 18, bold: true, color: { argb: 'FF0b4200' } };
+  titleCell.font = { size: 18, bold: true, color: { argb: 'FF3CAD8C' } };
   titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
   summarySheet.getRow(1).height = 30;
 
   // Subtítulo
   summarySheet.mergeCells('A2:F2');
   const subtitleCell = summarySheet.getCell('A2');
-  subtitleCell.value = 'Entre Capítulos - Sistema de Gestão';
+  subtitleCell.value = 'Entre Capítulos - Sistema de Gestão de Livraria';
   subtitleCell.font = { size: 12, italic: true };
   subtitleCell.alignment = { horizontal: 'center' };
 
@@ -261,7 +298,7 @@ async function generateExcel(data: ReportData) {
   summarySheet.addRow([]);
 
   // Informações do Relatório
-  summarySheet.addRow(['INFORMAÇÕES DO RELATÓRIO']).font = { bold: true, size: 12 };
+  summarySheet.addRow(['INFORMAÇÕES DO RELATÓRIO']).font = { bold: true, size: 12, color: { argb: 'FF3CAD8C' } };
   summarySheet.addRow(['Tipo:', data.reportType]);
   summarySheet.addRow(['Período:', `${new Date(data.startDate).toLocaleDateString('pt-BR')} - ${new Date(data.endDate).toLocaleDateString('pt-BR')}`]);
   summarySheet.addRow(['Categoria:', data.category]);
@@ -269,14 +306,14 @@ async function generateExcel(data: ReportData) {
   summarySheet.addRow([]);
 
   // Resumo Executivo
-  summarySheet.addRow(['RESUMO EXECUTIVO']).font = { bold: true, size: 12 };
+  summarySheet.addRow(['RESUMO EXECUTIVO']).font = { bold: true, size: 12, color: { argb: 'FF3CAD8C' } };
   
   const statsHeader = summarySheet.addRow(['Métrica', 'Valor']);
   statsHeader.font = { bold: true, color: { argb: 'FFFFFFFF' } };
   statsHeader.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF0b4200' }
+    fgColor: { argb: 'FF3CAD8C' }
   };
   statsHeader.alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -289,9 +326,23 @@ async function generateExcel(data: ReportData) {
   summarySheet.getColumn(1).width = 25;
   summarySheet.getColumn(2).width = 30;
 
+  // Adicionar bordas ao resumo executivo
+  summarySheet.eachRow((row, rowNumber) => {
+    if (rowNumber >= 11 && rowNumber <= 14) {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+    }
+  });
+
   // Sheet 2: Detalhamento
   const detailSheet = workbook.addWorksheet('Detalhamento', {
-    properties: { tabColor: { argb: 'FF2563eb' } }
+    properties: { tabColor: { argb: 'FF3CAD8C' } }
   });
 
   // Cabeçalho
@@ -300,7 +351,7 @@ async function generateExcel(data: ReportData) {
   headerRow.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF0b4200' }
+    fgColor: { argb: 'FF3CAD8C' }
   };
   headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
   headerRow.height = 25;

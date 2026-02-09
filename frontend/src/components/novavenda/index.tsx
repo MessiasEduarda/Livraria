@@ -6,7 +6,16 @@ import Navbar from '@/components/navbar';
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
-import ErrorModal from '@/components/modals/errorModal';
+import {
+  validateClientName,
+  validateClientEmail,
+  validateClientPhone,
+  validateClientCPF,
+  validateCart,
+  validateDiscount,
+  validateTotal,
+  validateSaleForm
+} from './validation';
 import {
   Container,
   Header,
@@ -60,7 +69,8 @@ import {
   PaymentOption,
   DiscountInput,
   Notes,
-  FormRow
+  FormRow,
+  FieldError
 } from './styles';
 
 interface Book {
@@ -109,9 +119,20 @@ export default function NovaVenda() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorTitle, setErrorTitle] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+
+  // Estados de erro
+  const [clientNameError, setClientNameError] = useState<string>('');
+  const [clientEmailError, setClientEmailError] = useState<string>('');
+  const [clientPhoneError, setClientPhoneError] = useState<string>('');
+  const [clientCPFError, setClientCPFError] = useState<string>('');
+  const [discountError, setDiscountError] = useState<string>('');
+
+  // Estados para controlar se o campo foi tocado
+  const [clientNameTouched, setClientNameTouched] = useState(false);
+  const [clientEmailTouched, setClientEmailTouched] = useState(false);
+  const [clientPhoneTouched, setClientPhoneTouched] = useState(false);
+  const [clientCPFTouched, setClientCPFTouched] = useState(false);
+  const [discountTouched, setDiscountTouched] = useState(false);
 
   const filteredBooks = books.filter(book => 
     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -136,20 +157,84 @@ export default function NovaVenda() {
     return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
   };
 
+  // Limpa todos os erros
+  function clearAllErrors() {
+    setClientNameError('');
+    setClientEmailError('');
+    setClientPhoneError('');
+    setClientCPFError('');
+    setDiscountError('');
+  }
+
+  // Validações individuais em tempo real
+  function handleClientNameBlur() {
+    setClientNameTouched(true);
+    if (clientName.trim()) {
+      const error = validateClientName(clientName);
+      setClientNameError(error ? error.message : '');
+    }
+  }
+
+  function handleClientEmailBlur() {
+    setClientEmailTouched(true);
+    if (clientEmail.trim()) {
+      const error = validateClientEmail(clientEmail);
+      setClientEmailError(error ? error.message : '');
+    }
+  }
+
+  function handleClientPhoneBlur() {
+    setClientPhoneTouched(true);
+    if (clientPhone.trim()) {
+      const error = validateClientPhone(clientPhone);
+      setClientPhoneError(error ? error.message : '');
+    }
+  }
+
+  function handleClientCPFBlur() {
+    setClientCPFTouched(true);
+    if (clientCPF.trim()) {
+      const error = validateClientCPF(clientCPF);
+      setClientCPFError(error ? error.message : '');
+    }
+  }
+
+  function handleDiscountBlur() {
+    setDiscountTouched(true);
+    if (discount) {
+      const error = validateDiscount(discount, calculateSubtotal());
+      setDiscountError(error ? error.message : '');
+    }
+  }
+
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhone(value);
     setClientPhone(formatted);
+    if (clientPhoneTouched) {
+      setClientPhoneError('');
+    }
   };
 
   const handleCPFChange = (value: string) => {
     const formatted = formatCPF(value);
     setClientCPF(formatted);
+    if (clientCPFTouched) {
+      setClientCPFError('');
+    }
   };
 
-  const showError = (title: string, message: string) => {
-    setErrorTitle(title);
-    setErrorMessage(message);
-    setShowErrorModal(true);
+  const handleClientNameChange = (value: string) => {
+    setClientName(value);
+    if (clientNameTouched) {
+      setClientNameError('');
+    }
+  };
+
+  const handleClientEmailChange = (value: string) => {
+    setClientEmail(value);
+    if (clientEmailTouched) {
+      setClientEmailError('');
+    }
   };
 
   const addToCart = (book: Book) => {
@@ -162,8 +247,6 @@ export default function NovaVenda() {
             ? { ...item, quantity: item.quantity + 1 }
             : item
         ));
-      } else {
-        showError('Estoque Insuficiente', 'Não há estoque suficiente para adicionar mais unidades deste produto.');
       }
     } else {
       setCart([...cart, { ...book, quantity: 1 }]);
@@ -184,8 +267,6 @@ export default function NovaVenda() {
           ? { ...item, quantity: newQuantity }
           : item
       ));
-    } else {
-      showError('Estoque Insuficiente', 'A quantidade solicitada excede o estoque disponível para este produto.');
     }
   };
 
@@ -232,96 +313,48 @@ export default function NovaVenda() {
   };
 
   const handleDiscountChange = (value: string) => {
-    const numValue = parseFloat(value) || 0;
-    const subtotal = calculateSubtotal();
-    
-    if (numValue > subtotal) {
-      showError('Desconto Inválido', `O desconto não pode ser maior que o valor total da venda (R$ ${formatCurrency(subtotal)}). O desconto foi ajustado automaticamente.`);
-      setDiscount(subtotal.toString());
-    } else if (numValue < 0) {
-      showError('Desconto Inválido', 'O desconto não pode ser um valor negativo.');
-      setDiscount('0');
-    } else {
-      setDiscount(value);
+    setDiscount(value);
+    if (discountTouched) {
+      setDiscountError('');
     }
-  };
-
-  const validateForm = (): boolean => {
-    // Validar carrinho
-    if (cart.length === 0) {
-      showError('Carrinho Vazio', 'Adicione ao menos um produto ao carrinho para realizar a venda.');
-      return false;
-    }
-
-    // Validar nome do cliente
-    if (!clientName.trim()) {
-      showError('Nome Obrigatório', 'O nome do cliente é obrigatório para finalizar a venda.');
-      return false;
-    }
-
-    if (clientName.trim().length < 3) {
-      showError('Nome Inválido', 'O nome do cliente deve ter pelo menos 3 caracteres.');
-      return false;
-    }
-
-    // Validar telefone
-    if (!clientPhone.trim()) {
-      showError('Telefone Obrigatório', 'O telefone do cliente é obrigatório para finalizar a venda.');
-      return false;
-    }
-
-    const phoneNumbers = clientPhone.replace(/\D/g, '');
-    if (phoneNumbers.length < 10) {
-      showError('Telefone Inválido', 'Digite um telefone válido com DDD e número completo. Exemplo: (11) 98765-4321');
-      return false;
-    }
-
-    // Validar CPF
-    if (!clientCPF.trim()) {
-      showError('CPF Obrigatório', 'O CPF do cliente é obrigatório para finalizar a venda.');
-      return false;
-    }
-
-    const cpfNumbers = clientCPF.replace(/\D/g, '');
-    if (cpfNumbers.length !== 11) {
-      showError('CPF Inválido', 'Digite um CPF válido com 11 dígitos. Exemplo: 123.456.789-00');
-      return false;
-    }
-
-    // Validar email se preenchido
-    if (clientEmail.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(clientEmail)) {
-        showError('Email Inválido', 'Digite um endereço de email válido. Exemplo: cliente@exemplo.com');
-        return false;
-      }
-    }
-
-    // Validar desconto
-    const discountValue = parseFloat(discount) || 0;
-    const subtotal = calculateSubtotal();
-    if (discountValue > subtotal) {
-      showError('Desconto Inválido', `O desconto (R$ ${formatCurrency(discountValue)}) não pode ser maior que o valor total da venda (R$ ${formatCurrency(subtotal)}).`);
-      return false;
-    }
-
-    if (discountValue < 0) {
-      showError('Desconto Inválido', 'O desconto não pode ser um valor negativo.');
-      return false;
-    }
-
-    // Validar total
-    const total = calculateTotal();
-    if (total <= 0) {
-      showError('Valor Total Inválido', 'O valor total da venda deve ser maior que zero. Verifique o desconto aplicado.');
-      return false;
-    }
-
-    return true;
   };
 
   const handleFinishClick = () => {
-    if (!validateForm()) {
+    // Marca todos os campos como tocados
+    setClientNameTouched(true);
+    setClientEmailTouched(true);
+    setClientPhoneTouched(true);
+    setClientCPFTouched(true);
+    setDiscountTouched(true);
+
+    // Limpa erros anteriores
+    clearAllErrors();
+
+    // Valida o formulário completo
+    const validationError = validateSaleForm({
+      clientName,
+      clientEmail,
+      clientPhone,
+      clientCPF,
+      cartLength: cart.length,
+      discount,
+      subtotal: calculateSubtotal(),
+      total: calculateTotal()
+    });
+
+    if (validationError) {
+      // Define o erro no campo apropriado
+      if (validationError.field === 'clientName') {
+        setClientNameError(validationError.message);
+      } else if (validationError.field === 'clientEmail') {
+        setClientEmailError(validationError.message);
+      } else if (validationError.field === 'clientPhone') {
+        setClientPhoneError(validationError.message);
+      } else if (validationError.field === 'clientCPF') {
+        setClientCPFError(validationError.message);
+      } else if (validationError.field === 'discount') {
+        setDiscountError(validationError.message);
+      }
       return;
     }
 
@@ -364,11 +397,48 @@ export default function NovaVenda() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `recibo-venda-${Date.now()}.pdf`;
+        const fileName = `recibo-venda-${Date.now()}.pdf`;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+
+        // Enviar email com o recibo (somente se o email foi fornecido)
+        if (clientEmail && clientEmail.trim() !== '') {
+          try {
+            // Converter blob para base64 para enviar no JSON
+            const arrayBuffer = await blob.arrayBuffer();
+            const base64 = btoa(
+              new Uint8Array(arrayBuffer).reduce(
+                (data, byte) => data + String.fromCharCode(byte),
+                ''
+              )
+            );
+
+            const emailResponse = await fetch('/api/enviar-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                clientEmail: clientEmail,
+                clientName: clientName,
+                pdfBuffer: base64,
+                fileName: fileName
+              }),
+            });
+
+            if (emailResponse.ok) {
+              console.log('Email enviado com sucesso');
+            } else {
+              console.error('Erro ao enviar email, mas a venda foi concluída');
+            }
+          } catch (emailError) {
+            console.error('Erro ao enviar email:', emailError);
+            // Não bloqueia o fluxo se o email falhar
+          }
+        }
 
         // Limpar formulário
         setCart([]);
@@ -379,14 +449,19 @@ export default function NovaVenda() {
         setPaymentMethod('dinheiro');
         setDiscount('');
         setNotes('');
+        clearAllErrors();
+        setClientNameTouched(false);
+        setClientEmailTouched(false);
+        setClientPhoneTouched(false);
+        setClientCPFTouched(false);
+        setDiscountTouched(false);
 
         setShowSuccessModal(true);
       } else {
-        showError('Erro ao Gerar Recibo', 'Não foi possível gerar o recibo da venda. Tente novamente.');
+        console.error('Erro ao gerar recibo');
       }
     } catch (error) {
       console.error('Erro ao processar venda:', error);
-      showError('Erro ao Processar Venda', 'Ocorreu um erro ao processar a venda. Verifique sua conexão com a internet e tente novamente.');
     }
   };
 
@@ -413,8 +488,20 @@ export default function NovaVenda() {
                   type="text"
                   placeholder="Digite o nome do cliente"
                   value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
+                  onChange={(e) => handleClientNameChange(e.target.value)}
+                  onBlur={handleClientNameBlur}
+                  $hasError={!!clientNameError}
                 />
+                {clientNameError && (
+                  <FieldError>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {clientNameError}
+                  </FieldError>
+                )}
               </FormGroup>
 
               <FormRow>
@@ -425,8 +512,20 @@ export default function NovaVenda() {
                     placeholder="(00) 00000-0000"
                     value={clientPhone}
                     onChange={(e) => handlePhoneChange(e.target.value)}
+                    onBlur={handleClientPhoneBlur}
                     maxLength={15}
+                    $hasError={!!clientPhoneError}
                   />
+                  {clientPhoneError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {clientPhoneError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -436,8 +535,20 @@ export default function NovaVenda() {
                     placeholder="000.000.000-00"
                     value={clientCPF}
                     onChange={(e) => handleCPFChange(e.target.value)}
+                    onBlur={handleClientCPFBlur}
                     maxLength={14}
+                    $hasError={!!clientCPFError}
                   />
+                  {clientCPFError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {clientCPFError}
+                    </FieldError>
+                  )}
                 </FormGroup>
               </FormRow>
 
@@ -447,8 +558,20 @@ export default function NovaVenda() {
                   type="email"
                   placeholder="email@exemplo.com"
                   value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
+                  onChange={(e) => handleClientEmailChange(e.target.value)}
+                  onBlur={handleClientEmailBlur}
+                  $hasError={!!clientEmailError}
                 />
+                {clientEmailError && (
+                  <FieldError>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    {clientEmailError}
+                  </FieldError>
+                )}
               </FormGroup>
             </Section>
 
@@ -580,7 +703,19 @@ export default function NovaVenda() {
                         placeholder="0,00"
                         value={discount}
                         onChange={(e) => handleDiscountChange(e.target.value)}
+                        onBlur={handleDiscountBlur}
+                        $hasError={!!discountError}
                       />
+                      {discountError && (
+                        <FieldError>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                          </svg>
+                          {discountError}
+                        </FieldError>
+                      )}
                     </FormGroup>
 
                     <FormGroup>
@@ -639,13 +774,6 @@ export default function NovaVenda() {
         </MainContent>
 
         {/* Modais */}
-        <ErrorModal
-          isOpen={showErrorModal}
-          title={errorTitle}
-          message={errorMessage}
-          onClose={() => setShowErrorModal(false)}
-        />
-
         <CancelModal
           isOpen={showCancelModal}
           title="Cancelar Venda"
@@ -667,7 +795,9 @@ export default function NovaVenda() {
         <SucessModal
           isOpen={showSuccessModal}
           title="Venda Realizada com Sucesso!"
-          message="A venda foi registrada e o recibo foi gerado automaticamente. O download iniciará em instantes."
+          message={clientEmail && clientEmail.trim() !== '' 
+            ? "A venda foi registrada, o recibo foi gerado e enviado para o email cadastrado."
+            : "A venda foi registrada e o recibo foi gerado automaticamente. O download iniciará em instantes."}
           buttonText="Nova Venda"
           onClose={handleSuccessClose}
         />

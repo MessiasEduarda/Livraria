@@ -6,7 +6,18 @@ import Navbar from '@/components/navbar';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
-import ErrorModal from '@/components/modals/errorModal';
+import {
+  validateName,
+  validateEmail,
+  validatePhone,
+  validateCPF,
+  validateEndereco,
+  validateCidade,
+  validateEstado,
+  validateCEP,
+  validateCategory,
+  validateClientForm
+} from './validation';
 import { 
   Container, 
   Header,
@@ -58,7 +69,8 @@ import {
   CancelButton,
   SubmitButton,
   QuickFilters,
-  QuickFilterButton
+  QuickFilterButton,
+  FieldError
 } from './styles';
 
 interface Client {
@@ -292,9 +304,28 @@ export default function Clientes() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [errorTitle, setErrorTitle] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+
+  // Estados de erro
+  const [nameError, setNameError] = useState<string>('');
+  const [emailError, setEmailError] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
+  const [cpfError, setCpfError] = useState<string>('');
+  const [enderecoError, setEnderecoError] = useState<string>('');
+  const [cidadeError, setCidadeError] = useState<string>('');
+  const [estadoError, setEstadoError] = useState<string>('');
+  const [cepError, setCepError] = useState<string>('');
+  const [categoryError, setCategoryError] = useState<string>('');
+
+  // Estados para controlar se o campo foi tocado
+  const [nameTouched, setNameTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [cpfTouched, setCpfTouched] = useState(false);
+  const [enderecoTouched, setEnderecoTouched] = useState(false);
+  const [cidadeTouched, setCidadeTouched] = useState(false);
+  const [estadoTouched, setEstadoTouched] = useState(false);
+  const [cepTouched, setCepTouched] = useState(false);
+  const [categoryTouched, setCategoryTouched] = useState(false);
 
   // Verificar se houve alterações
   useEffect(() => {
@@ -327,126 +358,133 @@ export default function Clientes() {
     return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
   };
 
+  // Limpa todos os erros
+  function clearAllErrors() {
+    setNameError('');
+    setEmailError('');
+    setPhoneError('');
+    setCpfError('');
+    setEnderecoError('');
+    setCidadeError('');
+    setEstadoError('');
+    setCepError('');
+    setCategoryError('');
+  }
+
+  // Validações individuais em tempo real
+  function handleNameBlur() {
+    setNameTouched(true);
+    if (newClient.name.trim()) {
+      const error = validateName(newClient.name);
+      setNameError(error ? error.message : '');
+    }
+  }
+
+  function handleEmailBlur() {
+    setEmailTouched(true);
+    if (newClient.email.trim()) {
+      const error = validateEmail(newClient.email);
+      setEmailError(error ? error.message : '');
+    }
+  }
+
+  function handlePhoneBlur() {
+    setPhoneTouched(true);
+    if (newClient.phone.trim()) {
+      const error = validatePhone(newClient.phone);
+      setPhoneError(error ? error.message : '');
+    }
+  }
+
+  function handleCPFBlur() {
+    setCpfTouched(true);
+    if (newClient.cpf.trim()) {
+      const error = validateCPF(newClient.cpf);
+      setCpfError(error ? error.message : '');
+    }
+  }
+
+  function handleEnderecoBlur() {
+    setEnderecoTouched(true);
+    if (newClient.endereco.trim()) {
+      const error = validateEndereco(newClient.endereco);
+      setEnderecoError(error ? error.message : '');
+    }
+  }
+
+  function handleCidadeBlur() {
+    setCidadeTouched(true);
+    if (newClient.cidade.trim()) {
+      const error = validateCidade(newClient.cidade);
+      setCidadeError(error ? error.message : '');
+    }
+  }
+
+  function handleEstadoBlur() {
+    setEstadoTouched(true);
+    if (newClient.estado) {
+      const error = validateEstado(newClient.estado);
+      setEstadoError(error ? error.message : '');
+    }
+  }
+
+  function handleCEPBlur() {
+    setCepTouched(true);
+    if (newClient.cep.trim()) {
+      const error = validateCEP(newClient.cep);
+      setCepError(error ? error.message : '');
+    }
+  }
+
+  function handleCategoryBlur() {
+    setCategoryTouched(true);
+    if (newClient.category) {
+      const error = validateCategory(newClient.category);
+      setCategoryError(error ? error.message : '');
+    }
+  }
+
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhone(value);
     setNewClient({ ...newClient, phone: formatted });
+    if (phoneTouched) {
+      setPhoneError('');
+    }
   };
 
   const handleCPFChange = (value: string) => {
     const formatted = formatCPF(value);
     setNewClient({ ...newClient, cpf: formatted });
+    if (cpfTouched) {
+      setCpfError('');
+    }
   };
 
   const handleCEPChange = (value: string) => {
     const formatted = formatCEP(value);
     setNewClient({ ...newClient, cep: formatted });
+    if (cepTouched) {
+      setCepError('');
+    }
   };
 
-  const showError = (title: string, message: string) => {
-    setErrorTitle(title);
-    setErrorMessage(message);
-    setIsErrorModalOpen(true);
-  };
+  const handleInputChange = (field: string, value: string) => {
+    setNewClient({ ...newClient, [field]: value });
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateForm = (): boolean => {
-    // Validar nome
-    if (!newClient.name.trim()) {
-      showError('Nome Obrigatório', 'O nome completo do cliente é obrigatório para cadastrar.');
-      return false;
+    // Limpa erro do campo específico se ele foi tocado
+    if (field === 'name' && nameTouched) {
+      setNameError('');
+    } else if (field === 'email' && emailTouched) {
+      setEmailError('');
+    } else if (field === 'endereco' && enderecoTouched) {
+      setEnderecoError('');
+    } else if (field === 'cidade' && cidadeTouched) {
+      setCidadeError('');
+    } else if (field === 'estado' && estadoTouched) {
+      setEstadoError('');
+    } else if (field === 'category' && categoryTouched) {
+      setCategoryError('');
     }
-
-    if (newClient.name.trim().length < 3) {
-      showError('Nome Inválido', 'O nome completo deve ter pelo menos 3 caracteres.');
-      return false;
-    }
-
-    // Validar email
-    if (!newClient.email.trim()) {
-      showError('Email Obrigatório', 'O email do cliente é obrigatório para cadastrar.');
-      return false;
-    }
-
-    if (!validateEmail(newClient.email)) {
-      showError('Email Inválido', 'Digite um email válido. Exemplo: cliente@email.com');
-      return false;
-    }
-
-    // Validar telefone
-    if (!newClient.phone.trim()) {
-      showError('Telefone Obrigatório', 'O telefone do cliente é obrigatório para cadastrar.');
-      return false;
-    }
-
-    const phoneNumbers = newClient.phone.replace(/\D/g, '');
-    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
-      showError('Telefone Inválido', 'Digite um telefone válido com DDD. Exemplo: (11) 98765-4321');
-      return false;
-    }
-
-    // Validar CPF
-    if (!newClient.cpf.trim()) {
-      showError('CPF Obrigatório', 'O CPF do cliente é obrigatório para cadastrar.');
-      return false;
-    }
-
-    const cpfNumbers = newClient.cpf.replace(/\D/g, '');
-    if (cpfNumbers.length !== 11) {
-      showError('CPF Inválido', 'Digite um CPF válido com 11 dígitos. Exemplo: 123.456.789-00');
-      return false;
-    }
-
-    // Validar endereço
-    if (!newClient.endereco.trim()) {
-      showError('Endereço Obrigatório', 'O endereço do cliente é obrigatório para cadastrar.');
-      return false;
-    }
-
-    if (newClient.endereco.trim().length < 5) {
-      showError('Endereço Inválido', 'Digite um endereço completo com rua e número.');
-      return false;
-    }
-
-    // Validar cidade
-    if (!newClient.cidade.trim()) {
-      showError('Cidade Obrigatória', 'A cidade do cliente é obrigatória para cadastrar.');
-      return false;
-    }
-
-    if (newClient.cidade.trim().length < 3) {
-      showError('Cidade Inválida', 'Digite um nome de cidade válido.');
-      return false;
-    }
-
-    // Validar estado
-    if (!newClient.estado) {
-      showError('Estado Obrigatório', 'Selecione o estado do cliente.');
-      return false;
-    }
-
-    // Validar CEP
-    if (!newClient.cep.trim()) {
-      showError('CEP Obrigatório', 'O CEP do cliente é obrigatório para cadastrar.');
-      return false;
-    }
-
-    const cepNumbers = newClient.cep.replace(/\D/g, '');
-    if (cepNumbers.length !== 8) {
-      showError('CEP Inválido', 'Digite um CEP válido com 8 dígitos. Exemplo: 01234-567');
-      return false;
-    }
-
-    // Validar categoria
-    if (!newClient.category) {
-      showError('Categoria Obrigatória', 'Selecione uma categoria de interesse do cliente.');
-      return false;
-    }
-
-    return true;
   };
 
   const filteredClients = clients.filter(client => {
@@ -527,7 +565,44 @@ export default function Clientes() {
   };
 
   const handleSubmitClick = () => {
-    if (!validateForm()) {
+    // Marca todos os campos como tocados
+    setNameTouched(true);
+    setEmailTouched(true);
+    setPhoneTouched(true);
+    setCpfTouched(true);
+    setEnderecoTouched(true);
+    setCidadeTouched(true);
+    setEstadoTouched(true);
+    setCepTouched(true);
+    setCategoryTouched(true);
+
+    // Limpa erros anteriores
+    clearAllErrors();
+
+    // Valida o formulário completo
+    const validationError = validateClientForm(newClient);
+
+    if (validationError) {
+      // Define o erro no campo apropriado
+      if (validationError.field === 'name') {
+        setNameError(validationError.message);
+      } else if (validationError.field === 'email') {
+        setEmailError(validationError.message);
+      } else if (validationError.field === 'phone') {
+        setPhoneError(validationError.message);
+      } else if (validationError.field === 'cpf') {
+        setCpfError(validationError.message);
+      } else if (validationError.field === 'endereco') {
+        setEnderecoError(validationError.message);
+      } else if (validationError.field === 'cidade') {
+        setCidadeError(validationError.message);
+      } else if (validationError.field === 'estado') {
+        setEstadoError(validationError.message);
+      } else if (validationError.field === 'cep') {
+        setCepError(validationError.message);
+      } else if (validationError.field === 'category') {
+        setCategoryError(validationError.message);
+      }
       return;
     }
 
@@ -593,6 +668,16 @@ export default function Clientes() {
       status: 'active'
     });
     setHasChanges(false);
+    clearAllErrors();
+    setNameTouched(false);
+    setEmailTouched(false);
+    setPhoneTouched(false);
+    setCpfTouched(false);
+    setEnderecoTouched(false);
+    setCidadeTouched(false);
+    setEstadoTouched(false);
+    setCepTouched(false);
+    setCategoryTouched(false);
   };
 
   const handleOpenModal = () => {
@@ -874,8 +959,20 @@ export default function Clientes() {
                     type="text"
                     placeholder="Digite o nome completo"
                     value={newClient.name}
-                    onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    onBlur={handleNameBlur}
+                    $hasError={!!nameError}
                   />
+                  {nameError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {nameError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -884,8 +981,20 @@ export default function Clientes() {
                     type="email"
                     placeholder="Digite o email"
                     value={newClient.email}
-                    onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={handleEmailBlur}
+                    $hasError={!!emailError}
                   />
+                  {emailError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {emailError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -896,8 +1005,20 @@ export default function Clientes() {
                       placeholder="(00) 00000-0000"
                       value={newClient.phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
+                      onBlur={handlePhoneBlur}
                       maxLength={15}
+                      $hasError={!!phoneError}
                     />
+                    {phoneError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {phoneError}
+                      </FieldError>
+                    )}
                   </FormGroup>
 
                   <FormGroup>
@@ -907,8 +1028,20 @@ export default function Clientes() {
                       placeholder="000.000.000-00"
                       value={newClient.cpf}
                       onChange={(e) => handleCPFChange(e.target.value)}
+                      onBlur={handleCPFBlur}
                       maxLength={14}
+                      $hasError={!!cpfError}
                     />
+                    {cpfError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {cpfError}
+                      </FieldError>
+                    )}
                   </FormGroup>
                 </div>
 
@@ -918,8 +1051,20 @@ export default function Clientes() {
                     type="text"
                     placeholder="Rua, número, complemento"
                     value={newClient.endereco}
-                    onChange={(e) => setNewClient({ ...newClient, endereco: e.target.value })}
+                    onChange={(e) => handleInputChange('endereco', e.target.value)}
+                    onBlur={handleEnderecoBlur}
+                    $hasError={!!enderecoError}
                   />
+                  {enderecoError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {enderecoError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>
@@ -929,21 +1074,45 @@ export default function Clientes() {
                       type="text"
                       placeholder="Digite a cidade"
                       value={newClient.cidade}
-                      onChange={(e) => setNewClient({ ...newClient, cidade: e.target.value })}
+                      onChange={(e) => handleInputChange('cidade', e.target.value)}
+                      onBlur={handleCidadeBlur}
+                      $hasError={!!cidadeError}
                     />
+                    {cidadeError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {cidadeError}
+                      </FieldError>
+                    )}
                   </FormGroup>
 
                   <FormGroup>
                     <Label>Estado *</Label>
                     <Select 
                       value={newClient.estado}
-                      onChange={(e) => setNewClient({ ...newClient, estado: e.target.value })}
+                      onChange={(e) => handleInputChange('estado', e.target.value)}
+                      onBlur={handleEstadoBlur}
+                      $hasError={!!estadoError}
                     >
                       <option value="">UF</option>
                       {estados.map(uf => (
                         <option key={uf} value={uf}>{uf}</option>
                       ))}
                     </Select>
+                    {estadoError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {estadoError}
+                      </FieldError>
+                    )}
                   </FormGroup>
 
                   <FormGroup>
@@ -953,8 +1122,20 @@ export default function Clientes() {
                       placeholder="00000-000"
                       value={newClient.cep}
                       onChange={(e) => handleCEPChange(e.target.value)}
+                      onBlur={handleCEPBlur}
                       maxLength={9}
+                      $hasError={!!cepError}
                     />
+                    {cepError && (
+                      <FieldError>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {cepError}
+                      </FieldError>
+                    )}
                   </FormGroup>
                 </div>
 
@@ -962,13 +1143,25 @@ export default function Clientes() {
                   <Label>Categoria de Interesse *</Label>
                   <Select 
                     value={newClient.category}
-                    onChange={(e) => setNewClient({ ...newClient, category: e.target.value })}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onBlur={handleCategoryBlur}
+                    $hasError={!!categoryError}
                   >
                     <option value="">Selecione uma categoria</option>
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </Select>
+                  {categoryError && (
+                    <FieldError>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                      </svg>
+                      {categoryError}
+                    </FieldError>
+                  )}
                 </FormGroup>
 
                 <FormGroup>
@@ -990,14 +1183,6 @@ export default function Clientes() {
             </ModalContent>
           </Modal>
         )}
-
-        {/* Modal de Erro */}
-        <ErrorModal
-          isOpen={isErrorModalOpen}
-          title={errorTitle}
-          message={errorMessage}
-          onClose={() => setIsErrorModalOpen(false)}
-        />
 
         {/* Modal de Cancelar Cadastro */}
         <CancelModal

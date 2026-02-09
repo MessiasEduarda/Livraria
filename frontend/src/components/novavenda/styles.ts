@@ -1,4 +1,15 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeInDown = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 export const Container = styled.div`
   margin-left: 231px;
@@ -111,10 +122,10 @@ export const Label = styled.label`
   margin-bottom: 8px;
 `;
 
-export const Input = styled.input`
+export const Input = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #ddd;
+  border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
@@ -123,8 +134,8 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #3CAD8C;
-    box-shadow: 0 0 0 3px rgba(60, 173, 140, 0.1);
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? 'rgba(171, 3, 29, 0.1)' : 'rgba(60, 173, 140, 0.1)'};
   }
 
   &::placeholder {
@@ -498,10 +509,10 @@ export const PaymentOption = styled.button<{ $active: boolean }>`
   }
 `;
 
-export const DiscountInput = styled.input`
+export const DiscountInput = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #ddd;
+  border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
@@ -510,8 +521,8 @@ export const DiscountInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #3CAD8C;
-    box-shadow: 0 0 0 3px rgba(60, 173, 140, 0.1);
+    border-color: ${props => props.$hasError ? '#ab031d' : '#3CAD8C'};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? 'rgba(171, 3, 29, 0.1)' : 'rgba(60, 173, 140, 0.1)'};
   }
 `;
 
@@ -673,5 +684,24 @@ export const EmptyCart = styled.div`
     font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
     color: #666;
     margin: 0;
+  }
+`;
+
+export const FieldError = styled.div`
+  padding: 8px 12px;
+  background-color: transparent;
+  border-left: 3px solid #ab031d;
+  border-radius: 8px;
+  color: #ff5c77;
+  font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  animation: ${fadeInDown} 0.3s ease;
+
+  svg {
+    flex-shrink: 0;
   }
 `;
