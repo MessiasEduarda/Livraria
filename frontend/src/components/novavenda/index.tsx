@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import { listarTodosLivros, listarVendedores, listarClientes, criarCliente, criarVenda, type LivroDTO, type ClienteDTO } from '@/services/api';
+import { useConfig } from '@/context/ConfigContext';
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
@@ -29,6 +31,9 @@ import {
   FormGroup,
   Label,
   Input,
+  ClientInputWrapper,
+  ClientSearchInput,
+  ClientTrocarBtn,
   Select,
   SearchBar,
   SearchIcon,
@@ -36,6 +41,7 @@ import {
   ProductGrid,
   ProductCard,
   ProductImage,
+  ProductImagePlaceholder,
   ProductInfo,
   ProductName,
   ProductAuthor,
@@ -47,9 +53,11 @@ import {
   CartItems,
   CartItem,
   ItemImage,
+  ItemImagePlaceholder,
   ItemDetails,
   ItemName,
   ItemPrice,
+  CartItemTotal,
   QuantityControl,
   QuantityButton,
   QuantityDisplay,
@@ -66,8 +74,10 @@ import {
   FinishButton,
   EmptyCart,
   Badge,
-  PaymentMethod,
-  PaymentOption,
+  PaymentDropdownWrapper,
+  PaymentDropdownTrigger,
+  PaymentDropdownList,
+  PaymentDropdownOption,
   DiscountInput,
   Notes,
   FormRow,
@@ -75,52 +85,28 @@ import {
   SellerDropdown,
   SellerButton,
   SellerList,
-  SellerOption
+  SellerOption,
+  AddNewClientOption,
+  ClientDropdownList,
+  ClientDropdownOption
 } from './styles';
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  category: string;
-  cover: string;
-  stock: number;
-}
-
-interface CartItem extends Book {
+interface CartItem extends LivroDTO {
   quantity: number;
 }
 
-interface Seller {
-  id: number;
-  name: string;
-}
-
-const booksData: Book[] = [
-  { id: 1, title: "1984", author: "George Orwell", price: 45.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 12 },
-  { id: 2, title: "Clean Code", author: "Robert Martin", price: 89.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 8 },
-  { id: 3, title: "O Hobbit", author: "J.R.R. Tolkien", price: 52.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 15 },
-  { id: 4, title: "Sapiens", author: "Yuval Harari", price: 64.90, category: "História", cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop", stock: 20 },
-  { id: 5, title: "O Poder do Hábito", author: "Charles Duhigg", price: 42.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 10 },
-  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJYT34ybnLwicWjbYWoXNtiHZ_V20iG7XuFg&s", stock: 25 },
-  { id: 7, title: "A Arte da Guerra", author: "Sun Tzu", price: 35.90, category: "Filosofia", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop", stock: 18 },
-  { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
-];
-
-const sellersData: Seller[] = [
-  { id: 1, name: "Maria" },
-  { id: 2, name: "Henrique" }
-];
-
 export default function NovaVenda() {
   const router = useRouter();
-  const [books] = useState<Book[]>(booksData);
-  const [sellers] = useState<Seller[]>(sellersData);
+  const { config } = useConfig();
+  const [books, setBooks] = useState<LivroDTO[]>([]);
+  const [sellers, setSellers] = useState<{ id: number; nome: string }[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
-  
-  // Dados do cliente
+
+  const [clientSearch, setClientSearch] = useState('');
+  const [clientSearchResults, setClientSearchResults] = useState<ClienteDTO[]>([]);
+  const [selectedClient, setSelectedClient] = useState<ClienteDTO | null>(null);
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -130,6 +116,8 @@ export default function NovaVenda() {
   const [selectedSeller, setSelectedSeller] = useState<number | null>(null);
   const [isSellerDropdownOpen, setIsSellerDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('dinheiro');
+  const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
+  const paymentDropdownRef = useRef<HTMLDivElement>(null);
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
   
@@ -143,6 +131,7 @@ export default function NovaVenda() {
   const [clientEmailError, setClientEmailError] = useState<string>('');
   const [clientPhoneError, setClientPhoneError] = useState<string>('');
   const [clientCPFError, setClientCPFError] = useState<string>('');
+  const [creatingClient, setCreatingClient] = useState(false);
   const [discountError, setDiscountError] = useState<string>('');
   const [sellerError, setSellerError] = useState<string>('');
 
@@ -154,10 +143,51 @@ export default function NovaVenda() {
   const [discountTouched, setDiscountTouched] = useState(false);
   const [sellerTouched, setSellerTouched] = useState(false);
 
-  const filteredBooks = books.filter(book => 
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.category.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([listarTodosLivros(), listarVendedores()])
+      .then(([livros, vendedores]) => {
+        if (!cancelled) {
+          setBooks(livros || []);
+          setSellers((vendedores || []).map(v => ({ id: v.id, nome: v.nome })));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setBooks([]); setSellers([]);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!clientSearch.trim()) {
+      setClientSearchResults([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      listarClientes({ nome: clientSearch, page: 0, size: 10 })
+        .then(res => setClientSearchResults(res.content || []))
+        .catch(() => setClientSearchResults([]));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [clientSearch]);
+
+  useEffect(() => {
+    if (!paymentDropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(e.target as Node)) {
+        setPaymentDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [paymentDropdownOpen]);
+
+  const filteredBooks = books.filter(book =>
+    book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (book.categoria || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Funções de formatação
@@ -273,18 +303,74 @@ export default function NovaVenda() {
 
   const getSelectedSellerName = () => {
     const seller = sellers.find(s => s.id === selectedSeller);
-    return seller ? seller.name : 'Selecione o vendedor';
+    return seller ? seller.nome : 'Selecione o vendedor';
   };
 
-  const addToCart = (book: Book) => {
+  const selectClient = (c: ClienteDTO) => {
+    setSelectedClient(c);
+    setClientName(c.nome);
+    setClientEmail(c.email || '');
+    setClientPhone(c.telefone || '');
+    setClientCPF(c.cpf || '');
+    setClientSearch('');
+    setClientSearchResults([]);
+  };
+
+  const handleAddNewClient = async () => {
+    const nome = clientSearch.trim();
+    setClientNameError('');
+    setClientPhoneError('');
+    setClientCPFError('');
+    setClientEmailError('');
+    const nameErr = validateClientName(nome);
+    if (nameErr) {
+      setClientNameError(nameErr.message);
+      return;
+    }
+    const phoneErr = validateClientPhone(clientPhone);
+    if (phoneErr) {
+      setClientPhoneError(phoneErr.message);
+      return;
+    }
+    const cpfErr = validateClientCPF(clientCPF);
+    if (cpfErr) {
+      setClientCPFError(cpfErr.message);
+      return;
+    }
+    const emailErr = validateClientEmail(clientEmail);
+    if (emailErr) {
+      setClientEmailError(emailErr.message);
+      return;
+    }
+    setCreatingClient(true);
+    try {
+      const novo = await criarCliente({
+        nome,
+        email: clientEmail.trim() || '',
+        telefone: clientPhone,
+        cpf: clientCPF
+      });
+      setSelectedClient(novo);
+      setClientName(novo.nome);
+      setClientEmail(novo.email || '');
+      setClientPhone(novo.telefone || '');
+      setClientCPF(novo.cpf || '');
+      setClientSearch('');
+      setClientSearchResults([]);
+    } catch (err) {
+      setClientNameError(err instanceof Error ? err.message : 'Erro ao cadastrar cliente.');
+    } finally {
+      setCreatingClient(false);
+    }
+  };
+
+  const addToCart = (book: LivroDTO) => {
     const existingItem = cart.find(item => item.id === book.id);
-    
+    const stock = book.estoque ?? 0;
     if (existingItem) {
-      if (existingItem.quantity < book.stock) {
+      if (existingItem.quantity < stock) {
         setCart(cart.map(item =>
-          item.id === book.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item.id === book.id ? { ...item, quantity: item.quantity + 1 } : item
         ));
       }
     } else {
@@ -294,17 +380,14 @@ export default function NovaVenda() {
 
   const updateQuantity = (bookId: number, newQuantity: number) => {
     const book = books.find(b => b.id === bookId);
-    
     if (newQuantity <= 0) {
       removeFromCart(bookId);
       return;
     }
-    
-    if (book && newQuantity <= book.stock) {
+    const stock = book?.estoque ?? 0;
+    if (book && newQuantity <= stock) {
       setCart(cart.map(item =>
-        item.id === bookId
-          ? { ...item, quantity: newQuantity }
-          : item
+        item.id === bookId ? { ...item, quantity: newQuantity } : item
       ));
     }
   };
@@ -314,7 +397,7 @@ export default function NovaVenda() {
   };
 
   const calculateSubtotal = () => {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cart.reduce((sum, item) => sum + (Number(item.preco) * item.quantity), 0);
   };
 
   const calculateDiscount = () => {
@@ -335,7 +418,7 @@ export default function NovaVenda() {
   };
 
   const hasFormData = () => {
-    return cart.length > 0 || clientName || clientEmail || clientPhone || clientCPF || discount || notes || selectedSeller !== null;
+    return cart.length > 0 || selectedClient || clientName || clientEmail || clientPhone || clientCPF || discount || notes || selectedSeller !== null;
   };
 
   const handleCancelClick = () => {
@@ -370,12 +453,15 @@ export default function NovaVenda() {
     // Limpa erros anteriores
     clearAllErrors();
 
-    // Valida o formulário completo
+    if (!selectedClient) {
+      setClientNameError('Busque e selecione um cliente da lista.');
+      return;
+    }
     const validationError = validateSaleForm({
-      clientName,
-      clientEmail,
-      clientPhone,
-      clientCPF,
+      clientName: selectedClient.nome,
+      clientEmail: selectedClient.email || '',
+      clientPhone: selectedClient.telefone || '',
+      clientCPF: selectedClient.cpf || '',
       cartLength: cart.length,
       discount,
       subtotal: calculateSubtotal(),
@@ -406,8 +492,30 @@ export default function NovaVenda() {
 
   const handleConfirmSale = async () => {
     setShowConfirmModal(false);
+    if (!selectedClient || selectedSeller == null) return;
 
     const seller = sellers.find(s => s.id === selectedSeller);
+    const formaPagamentoMap: Record<string, string> = {
+      dinheiro: 'DINHEIRO',
+      debito: 'DEBITO',
+      credito: 'CREDITO',
+      pix: 'PIX'
+    };
+
+    try {
+      await criarVenda({
+        clienteId: selectedClient.id,
+        vendedorId: selectedSeller,
+        itens: cart.map(i => ({ livroId: i.id, quantidade: i.quantity })),
+        formaPagamento: formaPagamentoMap[paymentMethod] || 'DINHEIRO',
+        desconto: calculateDiscount(),
+        observacoes: notes || undefined
+      });
+    } catch (err) {
+      console.error('Erro ao registrar venda:', err);
+      setClientNameError(err instanceof Error ? err.message : 'Erro ao registrar venda.');
+      return;
+    }
 
     const client = {
       name: clientName,
@@ -415,21 +523,25 @@ export default function NovaVenda() {
       phone: clientPhone,
       cpf: clientCPF
     };
-    
     const saleData = {
-      client: client,
-      seller: seller?.name || '',
-      items: cart,
+      client,
+      seller: seller?.nome || '',
+      items: cart.map(i => ({ ...i, title: i.titulo, author: i.autor, price: Number(i.preco), cover: i.imagemCapa })),
       subtotal: calculateSubtotal(),
       discount: calculateDiscount(),
       total: calculateTotal(),
       paymentMethod: paymentMethod,
       notes: notes,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      storeConfig: {
+        storeName: config.storeName,
+        storeEmail: config.storeEmail,
+        storePhone: config.storePhone,
+        storeAddress: config.storeAddress,
+      },
     };
 
     try {
-      // Gerar PDF do recibo
       const response = await fetch('/api/gerar-recibo', {
         method: 'POST',
         headers: {
@@ -471,7 +583,13 @@ export default function NovaVenda() {
                 clientEmail: clientEmail,
                 clientName: clientName,
                 pdfBuffer: base64,
-                fileName: fileName
+                fileName: fileName,
+                storeConfig: {
+                  storeName: config.storeName,
+                  storeEmail: config.storeEmail,
+                  storePhone: config.storePhone,
+                  storeAddress: config.storeAddress,
+                },
               }),
             });
 
@@ -486,14 +604,17 @@ export default function NovaVenda() {
           }
         }
 
-        // Limpar formulário
         setCart([]);
+        setSelectedClient(null);
         setClientName('');
         setClientEmail('');
         setClientPhone('');
         setClientCPF('');
+        setClientSearch('');
+        setClientSearchResults([]);
         setSelectedSeller(null);
         setPaymentMethod('dinheiro');
+        setPaymentDropdownOpen(false);
         setDiscount('');
         setNotes('');
         clearAllErrors();
@@ -529,17 +650,62 @@ export default function NovaVenda() {
         <MainContent>
           <LeftPanel>
             <Section>
-              <SectionTitle>Dados do Cliente</SectionTitle>
+              <SectionTitle>Cliente</SectionTitle>
               <FormGroup>
-                <Label>Nome Completo *</Label>
-                <Input
-                  type="text"
-                  placeholder="Digite o nome do cliente"
-                  value={clientName}
-                  onChange={(e) => handleClientNameChange(e.target.value)}
-                  onBlur={handleClientNameBlur}
-                  $hasError={!!clientNameError}
-                />
+                <Label>Buscar cliente *</Label>
+                <ClientInputWrapper>
+                  <ClientSearchInput
+                    type="text"
+                    placeholder="Digite o nome do cliente para buscar..."
+                    value={selectedClient ? selectedClient.nome : clientSearch}
+                    onChange={(e) => {
+                      if (selectedClient) {
+                        setSelectedClient(null);
+                        setClientName('');
+                        setClientEmail('');
+                        setClientPhone('');
+                        setClientCPF('');
+                      }
+                      setClientSearch(e.target.value);
+                    }}
+                    onFocus={() => !selectedClient && clientSearch && setClientSearchResults(clientSearchResults)}
+                    readOnly={!!selectedClient}
+                    $hasError={!!clientNameError}
+                    $withTrocar={!!selectedClient}
+                  />
+                  {selectedClient && (
+                    <ClientTrocarBtn
+                      type="button"
+                      onClick={() => { setSelectedClient(null); setClientName(''); setClientEmail(''); setClientPhone(''); setClientCPF(''); setClientSearch(''); }}
+                    >
+                      Trocar
+                    </ClientTrocarBtn>
+                  )}
+                </ClientInputWrapper>
+                {(clientSearchResults.length > 0 || (clientSearch.trim().length >= 2 && !selectedClient)) && (
+                  <ClientDropdownList>
+                    {clientSearchResults.map(c => (
+                      <ClientDropdownOption
+                        key={c.id}
+                        onClick={() => selectClient(c)}
+                        role="button"
+                      >
+                        <div style={{ fontWeight: 600 }}>{c.nome}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 2 }}>{c.email}</div>
+                      </ClientDropdownOption>
+                    ))}
+                    {clientSearch.trim().length >= 2 && (
+                      <AddNewClientOption
+                        role="button"
+                        $hasResults={clientSearchResults.length > 0}
+                        onClick={creatingClient ? undefined : handleAddNewClient}
+                        style={{ cursor: creatingClient ? 'wait' : 'pointer' }}
+                      >
+                        {creatingClient ? 'Cadastrando...' : `+ Adicionar "${clientSearch.trim()}" como novo cliente`}
+                      </AddNewClientOption>
+                    )}
+                  </ClientDropdownList>
+                )}
                 {clientNameError && (
                   <FieldError>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -644,7 +810,7 @@ export default function NovaVenda() {
                           $active={selectedSeller === seller.id}
                           onClick={() => handleSellerSelect(seller.id)}
                         >
-                          {seller.name}
+                          {seller.nome}
                         </SellerOption>
                       ))}
                     </SellerList>
@@ -681,26 +847,32 @@ export default function NovaVenda() {
               </SearchBar>
 
               <ProductGrid>
-                {filteredBooks.map(book => (
+                {loading ? (
+                  <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: '#666' }}>Carregando livros...</p>
+                ) : filteredBooks.map(book => (
                   <ProductCard key={book.id}>
-                    <ProductImage src={book.cover} alt={book.title} />
+                    {book.imagemCapa ? (
+                      <ProductImage src={book.imagemCapa} alt={book.titulo} />
+                    ) : (
+                      <ProductImagePlaceholder>Sem capa</ProductImagePlaceholder>
+                    )}
                     <ProductInfo>
-                      <ProductName>{book.title}</ProductName>
-                      <ProductAuthor>{book.author}</ProductAuthor>
-                      <ProductPrice>R$ {formatCurrency(book.price)}</ProductPrice>
-                      <ProductStock $lowStock={book.stock < 10}>
-                        {book.stock < 10 ? '⚠️ ' : '✓ '} Estoque: {book.stock}
+                      <ProductName>{book.titulo}</ProductName>
+                      <ProductAuthor>{book.autor}</ProductAuthor>
+                      <ProductPrice>R$ {formatCurrency(Number(book.preco))}</ProductPrice>
+                      <ProductStock $lowStock={(book.estoque ?? 0) < 10}>
+                        {(book.estoque ?? 0) < 10 ? '⚠️ ' : '✓ '} Estoque: {book.estoque ?? 0}
                       </ProductStock>
                       <AddButton 
                         onClick={() => addToCart(book)}
-                        disabled={book.stock === 0}
+                        disabled={(book.estoque ?? 0) === 0}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="9" cy="21" r="1"/>
                           <circle cx="20" cy="21" r="1"/>
                           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                         </svg>
-                        {book.stock === 0 ? 'Esgotado' : 'Adicionar'}
+                        {(book.estoque ?? 0) === 0 ? 'Esgotado' : 'Adicionar'}
                       </AddButton>
                     </ProductInfo>
                   </ProductCard>
@@ -720,10 +892,14 @@ export default function NovaVenda() {
                   <CartItems>
                     {cart.map(item => (
                       <CartItem key={item.id}>
-                        <ItemImage src={item.cover} alt={item.title} />
+                        {item.imagemCapa ? (
+                          <ItemImage src={item.imagemCapa} alt={item.titulo} />
+                        ) : (
+                          <ItemImagePlaceholder>Sem capa</ItemImagePlaceholder>
+                        )}
                         <ItemDetails>
-                          <ItemName>{item.title}</ItemName>
-                          <ItemPrice>R$ {formatCurrency(item.price)} un.</ItemPrice>
+                          <ItemName>{item.titulo}</ItemName>
+                          <ItemPrice>R$ {formatCurrency(Number(item.preco))} un.</ItemPrice>
                           <QuantityControl>
                             <QuantityButton onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                               -
@@ -735,9 +911,9 @@ export default function NovaVenda() {
                           </QuantityControl>
                         </ItemDetails>
                         <div>
-                          <div style={{ textAlign: 'right', marginBottom: '8px', fontSize: '1.1rem', fontWeight: '700', color: '#1a1a1a' }}>
-                            R$ {formatCurrency(item.price * item.quantity)}
-                          </div>
+                          <CartItemTotal>
+                            R$ {formatCurrency(Number(item.preco) * item.quantity)}
+                          </CartItemTotal>
                           <RemoveButton onClick={() => removeFromCart(item.id)}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <polyline points="3 6 5 6 21 6"/>
@@ -752,32 +928,56 @@ export default function NovaVenda() {
 
                   <Section>
                     <SectionTitle>Pagamento</SectionTitle>
-                    <PaymentMethod>
-                      <PaymentOption 
-                        $active={paymentMethod === 'dinheiro'}
-                        onClick={() => setPaymentMethod('dinheiro')}
+                    <PaymentDropdownWrapper ref={paymentDropdownRef}>
+                      <PaymentDropdownTrigger
+                        type="button"
+                        onClick={() => setPaymentDropdownOpen(!paymentDropdownOpen)}
+                        aria-expanded={paymentDropdownOpen}
+                        aria-haspopup="listbox"
                       >
-                        💵 Dinheiro
-                      </PaymentOption>
-                      <PaymentOption 
-                        $active={paymentMethod === 'debito'}
-                        onClick={() => setPaymentMethod('debito')}
-                      >
-                        💳 Débito
-                      </PaymentOption>
-                      <PaymentOption 
-                        $active={paymentMethod === 'credito'}
-                        onClick={() => setPaymentMethod('credito')}
-                      >
-                        💳 Crédito
-                      </PaymentOption>
-                      <PaymentOption 
-                        $active={paymentMethod === 'pix'}
-                        onClick={() => setPaymentMethod('pix')}
-                      >
-                        📱 PIX
-                      </PaymentOption>
-                    </PaymentMethod>
+                        <span>
+                          {paymentMethod === 'dinheiro' && 'Dinheiro'}
+                          {paymentMethod === 'debito' && 'Débito'}
+                          {paymentMethod === 'credito' && 'Crédito'}
+                          {paymentMethod === 'pix' && 'PIX'}
+                        </span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                          <path d={paymentDropdownOpen ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'} />
+                        </svg>
+                      </PaymentDropdownTrigger>
+                      {paymentDropdownOpen && (
+                        <PaymentDropdownList role="listbox">
+                          <PaymentDropdownOption
+                            role="option"
+                            aria-selected={paymentMethod === 'dinheiro'}
+                            onClick={() => { setPaymentMethod('dinheiro'); setPaymentDropdownOpen(false); }}
+                          >
+                            Dinheiro
+                          </PaymentDropdownOption>
+                          <PaymentDropdownOption
+                            role="option"
+                            aria-selected={paymentMethod === 'debito'}
+                            onClick={() => { setPaymentMethod('debito'); setPaymentDropdownOpen(false); }}
+                          >
+                            Débito
+                          </PaymentDropdownOption>
+                          <PaymentDropdownOption
+                            role="option"
+                            aria-selected={paymentMethod === 'credito'}
+                            onClick={() => { setPaymentMethod('credito'); setPaymentDropdownOpen(false); }}
+                          >
+                            Crédito
+                          </PaymentDropdownOption>
+                          <PaymentDropdownOption
+                            role="option"
+                            aria-selected={paymentMethod === 'pix'}
+                            onClick={() => { setPaymentMethod('pix'); setPaymentDropdownOpen(false); }}
+                          >
+                            PIX
+                          </PaymentDropdownOption>
+                        </PaymentDropdownList>
+                      )}
+                    </PaymentDropdownWrapper>
                   </Section>
 
                   <Section>

@@ -2,10 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+const DEFAULT_STORE = {
+  storeName: 'Entre Capítulos',
+  storeEmail: 'contato@entrecapitulos.com.br',
+  storePhone: '(11) 3456-7890',
+  storeAddress: 'Rua dos Livros, 123 - São Paulo, SP',
+};
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { client, seller, items, subtotal, discount, total, paymentMethod, notes, date } = data;
+    const { client, seller, items, subtotal, discount, total, paymentMethod, notes, date, storeConfig } = data;
+    const store = storeConfig && typeof storeConfig === 'object'
+      ? { ...DEFAULT_STORE, ...storeConfig }
+      : DEFAULT_STORE;
 
     // Criar um novo documento PDF
     const doc = new jsPDF({
@@ -25,7 +35,7 @@ export async function POST(request: NextRequest) {
     doc.setFontSize(24);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont('helvetica', 'bold');
-    doc.text('Entre Capítulos', 105, yPosition, { align: 'center' });
+    doc.text(store.storeName, 105, yPosition, { align: 'center' });
 
     yPosition += 10;
     doc.setFontSize(10);
@@ -34,13 +44,12 @@ export async function POST(request: NextRequest) {
     doc.text('Sistema de Gestão de Livraria', 105, yPosition, { align: 'center' });
     
     yPosition += 5;
-    doc.text('Rua dos Livros, 123 - Centro', 105, yPosition, { align: 'center' });
+    doc.text(store.storeAddress || '', 105, yPosition, { align: 'center' });
     
     yPosition += 5;
-    doc.text('São Paulo, SP - CEP 01000-000', 105, yPosition, { align: 'center' });
-    
-    yPosition += 5;
-    doc.text('Tel: (11) 3456-7890 | contato@entrecapitulos.com.br', 105, yPosition, { align: 'center' });
+    const contactLine = [store.storePhone, store.storeEmail].filter(Boolean).join(' | ');
+    if (contactLine) doc.text(contactLine, 105, yPosition, { align: 'center' });
+    yPosition += contactLine ? 5 : 0;
 
     yPosition += 8;
     // Linha divisória
@@ -301,7 +310,7 @@ export async function POST(request: NextRequest) {
     doc.setTextColor(153, 153, 153);
     doc.setFont('helvetica', 'normal');
     doc.text('Relatório gerado automaticamente pelo Sistema de Gestão de Livraria', 105, footerY + 5, { align: 'center' });
-    doc.text('© 2026 Entre Capítulos - Todos os direitos reservados', 105, footerY + 10, { align: 'center' });
+    doc.text(`© ${new Date().getFullYear()} ${store.storeName} - Todos os direitos reservados`, 105, footerY + 10, { align: 'center' });
 
     doc.setFontSize(7);
     doc.text('Página 1 de 1', 105, footerY + 16, { align: 'center' });

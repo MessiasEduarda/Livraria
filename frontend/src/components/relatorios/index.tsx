@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import Navbar from '@/components/navbar';
+import { useConfig } from '@/context/ConfigContext';
+import { listarVendas } from '@/services/api';
+import type { VendaDTO } from '@/services/api';
 import { 
   BarChart, 
   Bar, 
@@ -231,34 +234,43 @@ const quickActions = [
   }
 ];
 
-const salesDataExample = [
-  { date: '2026-02-04', product: '1984 - George Orwell', category: 'Ficção', quantity: 2, unitPrice: 45.90, total: 91.80 },
-  { date: '2026-02-04', product: 'Clean Code - Robert Martin', category: 'Tecnologia', quantity: 1, unitPrice: 89.90, total: 89.90 },
-  { date: '2026-02-03', product: 'Sapiens - Yuval Harari', category: 'História', quantity: 3, unitPrice: 64.90, total: 194.70 },
-  { date: '2026-02-03', product: 'Harry Potter - J.K. Rowling', category: 'Fantasia', quantity: 2, unitPrice: 58.90, total: 117.80 },
-  { date: '2026-02-02', product: 'Algoritmos - Thomas Cormen', category: 'Tecnologia', quantity: 1, unitPrice: 125.90, total: 125.90 }
-];
+export type SaleRow = { date: string; product: string; category: string; quantity: number; unitPrice: number; total: number };
 
-// Função para calcular estatísticas baseadas nos dados reais
-const calculateReportStats = (salesData: typeof salesDataExample) => {
-  const totalRevenue = salesData.reduce((sum, sale) => sum + sale.total, 0);
-  const totalSales = salesData.length;
-  const totalProducts = salesData.reduce((sum, sale) => sum + sale.quantity, 0);
+function flattenVendasToRows(vendas: VendaDTO[]): SaleRow[] {
+  const rows: SaleRow[] = [];
+  for (const v of vendas) {
+    const cat = v.category || 'Outros';
+    for (const item of v.items || []) {
+      const unit = Number(item.precoUnitario ?? item.price ?? 0);
+      const total = Number(item.subtotal ?? item.quantidade * unit);
+      rows.push({
+        date: v.date,
+        product: item.titulo || item.bookTitle || 'Produto',
+        category: cat,
+        quantity: item.quantidade,
+        unitPrice: unit,
+        total
+      });
+    }
+  }
+  return rows;
+}
+
+function calculateReportStatsFromVendas(vendas: VendaDTO[]) {
+  const totalRevenue = vendas.reduce((sum, v) => sum + Number(v.total), 0);
+  const totalSales = vendas.length;
+  const totalProducts = vendas.reduce((sum, v) => sum + (v.items || []).reduce((s, i) => s + i.quantidade, 0), 0);
   const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
-
-  return {
-    totalRevenue,
-    totalSales,
-    averageTicket,
-    totalProducts
-  };
-};
+  return { totalRevenue, totalSales, averageTicket, totalProducts };
+}
 
 export default function Relatorios() {
+  const { config } = useConfig();
   const [selectedReportType, setSelectedReportType] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [reportVendas, setReportVendas] = useState<VendaDTO[] | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   
   const [filters, setFilters] = useState<ReportFilters>({
@@ -272,8 +284,33 @@ export default function Relatorios() {
     groupBy: 'dia'
   });
 
-  // Calcular estatísticas reais dos dados
-  const reportStats = calculateReportStats(salesDataExample);
+  const saleRows = useMemo(() => reportVendas ? flattenVendasToRows(reportVendas) : [], [reportVendas]);
+  const reportStats = useMemo(() => reportVendas ? calculateReportStatsFromVendas(reportVendas) : { totalRevenue: 0, totalSales: 0, averageTicket: 0, totalProducts: 0 }, [reportVendas]);
+  const salesDataByDay = useMemo(() => {
+    if (!reportVendas?.length) return [];
+    const byDay: Record<string, number> = {};
+    for (const v of reportVendas) {
+      const d = v.date.split('T')[0];
+      byDay[d] = (byDay[d] || 0) + Number(v.total);
+    }
+    return Object.entries(byDay)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, total]) => ({ name: new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), vendas: Math.round(total * 100) / 100 }));
+  }, [reportVendas]);
+  const categoryData = useMemo(() => {
+    if (!saleRows.length) return [];
+    const byCat: Record<string, number> = {};
+    let sum = 0;
+    for (const r of saleRows) {
+      byCat[r.category] = (byCat[r.category] || 0) + r.total;
+      sum += r.total;
+    }
+    return Object.entries(byCat).map(([name, value]) => ({
+      name,
+      value: Math.round(value * 100) / 100,
+      percentage: sum > 0 ? `${Math.round((value / sum) * 100)}%` : '0%'
+    }));
+  }, [saleRows]);
 
   const handleReportTypeSelect = (typeId: string) => {
     setSelectedReportType(typeId);
@@ -288,15 +325,24 @@ export default function Relatorios() {
     }
 
     setIsGenerating(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsGenerating(false);
-    setShowPreview(true);
-    
-    setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setReportVendas(null);
+    try {
+      const res = await listarVendas({
+        dataInicio: filters.startDate,
+        dataFim: filters.endDate,
+        size: 500
+      });
+      setReportVendas(res.content || []);
+      setShowPreview(true);
+      setTimeout(() => previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    } catch (e) {
+      console.error(e);
+      setReportVendas([]);
+      setShowPreview(true);
+      setTimeout(() => previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleClearFilters = () => {
@@ -310,6 +356,7 @@ export default function Relatorios() {
       includeDetails: true,
       groupBy: 'dia'
     });
+    setReportVendas(null);
     setShowPreview(false);
   };
 
@@ -329,8 +376,8 @@ export default function Relatorios() {
         startDate: filters.startDate,
         endDate: filters.endDate,
         category: filters.category === 'todas' ? 'Todas' : filters.category,
-        stats: reportStats, // Usar estatísticas calculadas
-        salesData: salesDataExample
+        stats: reportStats,
+        salesData: saleRows
       };
 
       const response = await fetch('/api/export-relatorio', {
@@ -340,7 +387,13 @@ export default function Relatorios() {
         },
         body: JSON.stringify({
           format: 'pdf',
-          data: reportData
+          data: reportData,
+          storeConfig: {
+            storeName: config.storeName,
+            storeEmail: config.storeEmail,
+            storePhone: config.storePhone,
+            storeAddress: config.storeAddress,
+          },
         }),
       });
 
@@ -393,24 +446,6 @@ export default function Relatorios() {
   };
 
   const selectedReport = reportTypes.find(r => r.id === selectedReportType);
-
-  const salesData = [
-    { name: 'Seg', vendas: 45 },
-    { name: 'Ter', vendas: 62 },
-    { name: 'Qua', vendas: 55 },
-    { name: 'Qui', vendas: 78 },
-    { name: 'Sex', vendas: 92 },
-    { name: 'Sáb', vendas: 85 },
-    { name: 'Dom', vendas: 48 }
-  ];
-
-  const categoryData = [
-    { name: 'Ficção', value: 30, percentage: '30%' },
-    { name: 'Tecnologia', value: 25, percentage: '25%' },
-    { name: 'História', value: 20, percentage: '20%' },
-    { name: 'Fantasia', value: 15, percentage: '15%' },
-    { name: 'Outros', value: 10, percentage: '10%' }
-  ];
 
   const COLORS = ['#2a8569', '#2563eb', '#7c3aed', '#dc2626', '#ea580c'];
 
@@ -597,7 +632,7 @@ export default function Relatorios() {
                       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                     </svg>
                     <div>
-                      <h1>Entre Capítulos</h1>
+                      <h1>{config.storeName}</h1>
                       <p>Sistema de Gestão Integrada</p>
                     </div>
                   </ReportLogo>
@@ -626,28 +661,32 @@ export default function Relatorios() {
 
                 <SectionDivider />
 
+                {reportVendas && reportVendas.length === 0 && (
+                  <ReportSection>
+                    <div style={{ textAlign: 'center', padding: '32px 24px', background: '#f8f9fa', borderRadius: 12, color: '#666', fontSize: '1rem' }}>
+                      Não há vendas para o período selecionado.
+                    </div>
+                  </ReportSection>
+                )}
+
                 <ReportSection>
                   <SectionTitle>Resumo Executivo</SectionTitle>
                   <StatisticsGrid>
                     <StatCard>
                       <StatLabel>Receita Total</StatLabel>
                       <StatValue>R$ {formatCurrency(reportStats.totalRevenue)}</StatValue>
-                      <StatChange $positive={true}>+15.3% vs período anterior</StatChange>
-                    </StatCard>
+                      </StatCard>
                     <StatCard>
                       <StatLabel>Total de Vendas</StatLabel>
                       <StatValue>{reportStats.totalSales}</StatValue>
-                      <StatChange $positive={true}>+8.7% vs período anterior</StatChange>
                     </StatCard>
                     <StatCard>
                       <StatLabel>Ticket Médio</StatLabel>
                       <StatValue>R$ {formatCurrency(reportStats.averageTicket)}</StatValue>
-                      <StatChange $positive={false}>-2.1% vs período anterior</StatChange>
                     </StatCard>
                     <StatCard>
                       <StatLabel>Produtos Vendidos</StatLabel>
                       <StatValue>{reportStats.totalProducts}</StatValue>
-                      <StatChange $positive={true}>+12.4% vs período anterior</StatChange>
                     </StatCard>
                   </StatisticsGrid>
                 </ReportSection>
@@ -660,7 +699,7 @@ export default function Relatorios() {
                       <ChartTitle>Evolução de Vendas no Período</ChartTitle>
                       <ChartWrapper>
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={salesData}>
+                          <BarChart data={salesDataByDay}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                             <XAxis 
                               dataKey="name" 
@@ -734,7 +773,7 @@ export default function Relatorios() {
                         </TableRow>
                       </TableHeader>
                       <tbody>
-                        {salesDataExample.map((sale, index) => (
+                        {saleRows.map((sale, index) => (
                           <TableRow key={index}>
                             <TableCell>{new Date(sale.date).toLocaleDateString('pt-BR')}</TableCell>
                             <TableCell>{sale.product}</TableCell>
@@ -794,7 +833,7 @@ export default function Relatorios() {
                   fontFamily: 'var(--font-inter-variable-regular), "Inter", sans-serif'
                 }}>
                   <p>Relatório gerado automaticamente pelo Sistema de Gestão de Livraria</p>
-                  <p>© 2026 Entre Capítulos - Todos os direitos reservados</p>
+                  <p>© {new Date().getFullYear()} {config.storeName} - Todos os direitos reservados</p>
                 </div>
               </ReportContent>
             </ReportPreview>

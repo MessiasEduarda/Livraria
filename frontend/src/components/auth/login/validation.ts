@@ -7,12 +7,6 @@ export type ValidationError = {
 // Regex para validação de email
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Credenciais do admin
-export const ADMIN_CREDENTIALS = {
-  email: 'admin@gmail.com',
-  password: '12345678'
-};
-
 // Validação de email
 export function validateEmail(email: string): ValidationError | null {
   if (!email || email.trim() === '') {
@@ -63,14 +57,7 @@ export function validateCredentials(
   const passwordError = validatePassword(password);
   if (passwordError) return passwordError;
 
-  // Verifica se as credenciais correspondem ao admin
-  if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-    return {
-      field: 'password',
-      message: 'E-mail ou senha incorretos. Apenas administradores podem acessar.'
-    };
-  }
-
+  // Credenciais são validadas pela API (admin e vendedores)
   return null;
 }
 

@@ -12,14 +12,29 @@ const spin = keyframes`
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 20px;
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
   }
 `;
 

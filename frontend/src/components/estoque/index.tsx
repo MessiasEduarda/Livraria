@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import EditablePageTitle from '@/components/EditablePageTitle';
+import { listarTodosLivros, listarCategorias, type LivroDTO, type CategoriaDTO } from '@/services/api';
 import { 
   Container, 
   Header,
@@ -23,12 +25,14 @@ import {
   StatInfo,
   StatLabel,
   StatValue,
+  TableWrapper,
   BooksTable,
   TableHeader,
   TableRow,
   TableCell,
   TableHeaderCell,
   BookImage,
+  BookImagePlaceholder,
   BookDetails,
   BookTitle,
   BookAuthor,
@@ -40,34 +44,9 @@ import {
   CategoryBadge
 } from './styles';
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  category: string;
-  cover: string;
-  stock: number;
-}
-
-const inventoryBooks: Book[] = [
-  { id: 1, title: "1984", author: "George Orwell", price: 45.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 12 },
-  { id: 2, title: "Clean Code", author: "Robert Martin", price: 89.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 8 },
-  { id: 3, title: "O Hobbit", author: "J.R.R. Tolkien", price: 52.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 15 },
-  { id: 4, title: "Sapiens", author: "Yuval Harari", price: 64.90, category: "História", cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop", stock: 20 },
-  { id: 5, title: "O Poder do Hábito", author: "Charles Duhigg", price: 42.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 10 },
-  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1618836850461-81b3a1969e30?w=400&h=600&fit=crop", stock: 25 },
-  { id: 7, title: "A Arte da Guerra", author: "Sun Tzu", price: 35.90, category: "Filosofia", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop", stock: 18 },
-  { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
-  { id: 9, title: "O Senhor dos Anéis", author: "J.R.R. Tolkien", price: 78.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 3 },
-  { id: 10, title: "Python para Dados", author: "Wes McKinney", price: 95.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 22 },
-  { id: 11, title: "O Pequeno Príncipe", author: "Antoine de Saint-Exupéry", price: 29.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 30 },
-  { id: 12, title: "Mindset", author: "Carol Dweck", price: 48.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 7 },
-];
-
-const categories = ["Ficção", "Tecnologia", "Fantasia", "História", "Autoajuda", "Filosofia"];
 const stockLevels = [
   { label: "Todos", value: "all" },
+  { label: "Esgotados", value: "out" },
   { label: "Estoque Baixo", value: "low" },
   { label: "Estoque Médio", value: "medium" },
   { label: "Estoque Alto", value: "high" }
@@ -75,34 +54,56 @@ const stockLevels = [
 
 export default function Estoque() {
   const router = useRouter();
-  const [books] = useState<Book[]>(inventoryBooks);
+  const [books, setBooks] = useState<LivroDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<CategoriaDTO[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStockLevel, setSelectedStockLevel] = useState('all');
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const [isStockFilterOpen, setIsStockFilterOpen] = useState(false);
 
-  const filteredBooks = books.filter(book => {
-    const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         book.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || book.category === selectedCategory;
-    
-    let matchesStock = true;
-    if (selectedStockLevel === 'low') {
-      matchesStock = book.stock < 10;
-    } else if (selectedStockLevel === 'medium') {
-      matchesStock = book.stock >= 10 && book.stock <= 20;
-    } else if (selectedStockLevel === 'high') {
-      matchesStock = book.stock > 20;
+  useEffect(() => {
+    listarCategorias().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const lista = await listarTodosLivros();
+      setBooks(lista || []);
+    } catch {
+      setBooks([]);
+    } finally {
+      setLoading(false);
     }
-    
+  }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  const filteredBooks = books.filter(book => {
+    const matchesSearch = book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         book.autor.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || book.categoria === selectedCategory;
+    let matchesStock = true;
+    if (selectedStockLevel === 'out') {
+      matchesStock = (book.estoque ?? 0) === 0;
+    } else if (selectedStockLevel === 'low') {
+      matchesStock = (book.estoque ?? 0) > 0 && book.estoque < 10;
+    } else if (selectedStockLevel === 'medium') {
+      matchesStock = book.estoque >= 10 && book.estoque <= 20;
+    } else if (selectedStockLevel === 'high') {
+      matchesStock = book.estoque > 20;
+    }
     return matchesSearch && matchesCategory && matchesStock;
   });
 
   const totalBooks = books.length;
-  const lowStockBooks = books.filter(b => b.stock < 10).length;
-  const totalStockValue = books.reduce((acc, book) => acc + (book.price * book.stock), 0);
-  const totalItems = books.reduce((acc, book) => acc + book.stock, 0);
+  const lowStockBooks = books.filter(b => b.estoque < 10).length;
+  const totalStockValue = books.reduce((acc, book) => acc + (Number(book.preco) * book.estoque), 0);
+  const totalItems = books.reduce((acc, book) => acc + book.estoque, 0);
 
   const handleClearFilters = () => {
     setSelectedCategory('');
@@ -138,7 +139,9 @@ export default function Estoque() {
     <Navbar>
       <Container>
         <Header>
-          <Title>Controle de Estoque</Title>
+          <EditablePageTitle pageKey="estoque" defaultTitle="Estoque">
+            {(title) => <Title>{title}</Title>}
+          </EditablePageTitle>
           <SearchBar>
             <SearchIcon>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -231,16 +234,16 @@ export default function Estoque() {
                   >
                     Todas as Categorias
                   </FilterOption>
-                  {categories.map(category => (
+                  {categories.map(cat => (
                     <FilterOption
-                      key={category}
-                      $active={selectedCategory === category}
+                      key={cat.id}
+                      $active={selectedCategory === cat.nome}
                       onClick={() => {
-                        setSelectedCategory(category);
+                        setSelectedCategory(cat.nome);
                         setIsCategoryFilterOpen(false);
                       }}
                     >
-                      {category}
+                      {cat.nome}
                     </FilterOption>
                   ))}
                 </FilterList>
@@ -285,7 +288,12 @@ export default function Estoque() {
           </FilterGroup>
         </FilterSection>
 
-        {filteredBooks.length > 0 ? (
+        {loading ? (
+          <EmptyState>
+            <p>Carregando estoque...</p>
+          </EmptyState>
+        ) : filteredBooks.length > 0 ? (
+          <TableWrapper>
           <BooksTable>
             <TableHeader>
               <TableRow $isHeader>
@@ -301,22 +309,26 @@ export default function Estoque() {
                 <TableRow key={book.id}>
                   <TableCell>
                     <BookDetails>
-                      <BookImage src={book.cover} alt={book.title} />
+                      {book.imagemCapa ? (
+                        <BookImage src={book.imagemCapa} alt={book.titulo} />
+                      ) : (
+                        <BookImagePlaceholder>Sem capa</BookImagePlaceholder>
+                      )}
                       <div>
-                        <BookTitle>{book.title}</BookTitle>
-                        <BookAuthor>{book.author}</BookAuthor>
+                        <BookTitle>{book.titulo}</BookTitle>
+                        <BookAuthor>{book.autor}</BookAuthor>
                       </div>
                     </BookDetails>
                   </TableCell>
                   <TableCell>
-                    <CategoryBadge>{book.category}</CategoryBadge>
+                    <CategoryBadge>{book.categoria}</CategoryBadge>
                   </TableCell>
                   <TableCell>
-                    <PriceTag>R$ {formatCurrency(book.price)}</PriceTag>
+                    <PriceTag>R$ {formatCurrency(Number(book.preco))}</PriceTag>
                   </TableCell>
                   <TableCell>
-                    <StockBadge $status={getStockStatus(book.stock)}>
-                      {book.stock} unidades
+                    <StockBadge $status={getStockStatus(book.estoque)}>
+                      {book.estoque} unidades
                     </StockBadge>
                   </TableCell>
                   <TableCell>
@@ -340,6 +352,7 @@ export default function Estoque() {
               ))}
             </tbody>
           </BooksTable>
+          </TableWrapper>
         ) : (
           <EmptyState>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

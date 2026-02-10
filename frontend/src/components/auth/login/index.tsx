@@ -1,20 +1,24 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as S from './styles';
 import { 
   validateEmail, 
   validatePassword, 
   validateCredentials, 
-  ValidationError,
   shouldShowModal,
   getModalTitle
 } from './validation';
 import ErrorModal from '@/components/modals/errorModal';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/context/ConfigContext';
+import { login as apiLogin } from '@/services/api';
 
 export default function Login() {
   const router = useRouter();
+  const { config } = useConfig();
+  const { user, login: setAuth, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +36,13 @@ export default function Login() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+
+  // Se já estiver logado, redireciona conforme perfil
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.replace(user.admin ? '/home' : '/minhas-vendas');
+    }
+  }, [user, authLoading, router]);
 
   // Limpa todos os erros
   function clearAllErrors() {
@@ -109,12 +120,23 @@ export default function Login() {
       return;
     }
 
-    // Se passou na validação, faz o login
+    // Se passou na validação, chama a API e redireciona conforme perfil
     setLoading(true);
-
-    setTimeout(() => {
-      router.push('/home');
-    }, 1000);
+    apiLogin(email.trim(), password)
+      .then((data) => {
+        setAuth(data);
+        if (data.admin) {
+          router.push('/home');
+        } else {
+          router.push('/minhas-vendas');
+        }
+      })
+      .catch((err) => {
+        setLoading(false);
+        setModalTitle('Falha no login');
+        setModalMessage(err?.message || 'E-mail ou senha incorretos. Tente novamente.');
+        setModalOpen(true);
+      });
   }
 
   return (
@@ -133,8 +155,8 @@ export default function Login() {
               />
             </S.LogoWrapper>
 
-            <S.Title>Entre Capítulos</S.Title>
-            <S.Subtitle>Área do administrador</S.Subtitle>
+            <S.Title>{config.storeName}</S.Title>
+            <S.Subtitle>Administrador e vendedores</S.Subtitle>
 
             <S.Form onSubmit={handleLogin}>
               {/* Campo de E-mail */}

@@ -3,14 +3,29 @@ import styled from 'styled-components';
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 20px;
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
   }
 `;
 
@@ -43,12 +58,19 @@ export const StatsGrid = styled.div`
   gap: 24px;
   margin-bottom: 36px;
 
-  @media (max-width: 1400px) {
+  @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 12px;
+    margin-bottom: 20px;
   }
 `;
 
@@ -117,7 +139,6 @@ export const StatContent = styled.div`
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 0;
 `;
 
 export const StatLabel = styled.span`
@@ -171,6 +192,17 @@ export const SectionGrid = styled.div`
 
   @media (max-width: 1200px) {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 12px;
+    margin-bottom: 20px;
   }
 `;
 
@@ -223,6 +255,17 @@ export const ChartPeriod = styled.span`
 export const ChartWrapper = styled.div`
   width: 100%;
   height: 320px;
+  min-height: 240px;
+
+  @media (max-width: 768px) {
+    height: 280px;
+    min-height: 220px;
+  }
+
+  @media (max-width: 576px) {
+    height: 260px;
+    min-height: 200px;
+  }
 `;
 
 export const ActivitySection = styled.div`
@@ -493,7 +536,6 @@ export const ProductInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 0;
 `;
 
 export const ProductName = styled.div`

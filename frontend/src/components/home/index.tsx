@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import EditablePageTitle from '@/components/EditablePageTitle';
+import FormDropdown from '@/components/FormDropdown';
+import { listarTodosLivros, criarLivro, listarCategorias, type LivroDTO, type CategoriaDTO } from '@/services/api';
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
@@ -26,11 +29,13 @@ import {
   FilterButton,
   FilterList,
   FilterOption,
+  EsgotadosFilterButton,
   ClearFilter,
   AddButton,
   BooksGrid,
   BookCard,
   BookCover,
+  BookCoverPlaceholder,
   BookInfo,
   BookTitle,
   BookAuthor,
@@ -49,6 +54,7 @@ import {
   ModalClose,
   ModalBody,
   FormGroup,
+  CategoryDropdownWrap,
   Label,
   Input,
   Select,
@@ -60,34 +66,14 @@ import {
   FieldError
 } from './styles';
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  category: string;
-  cover: string;
-  stock: number;
-}
-
-const initialBooks: Book[] = [
-  { id: 1, title: "1984", author: "George Orwell", price: 45.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 12 },
-  { id: 2, title: "Clean Code", author: "Robert Martin", price: 89.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 8 },
-  { id: 3, title: "O Hobbit", author: "J.R.R. Tolkien", price: 52.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 15 },
-  { id: 4, title: "Sapiens", author: "Yuval Harari", price: 64.90, category: "História", cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop", stock: 20 },
-  { id: 5, title: "O Poder do Hábito", author: "Charles Duhigg", price: 42.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 10 },
-  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJYT34ybnLwicWjbYWoXNtiHZ_V20iG7XuFg&s", stock: 25 },
-  { id: 7, title: "A Arte da Guerra", author: "Sun Tzu", price: 35.90, category: "Filosofia", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop", stock: 18 },
-  { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
-];
-
-const categories = ["Ficção", "Tecnologia", "Fantasia", "História", "Autoajuda", "Filosofia"];
-
 export default function Home() {
   const router = useRouter();
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<LivroDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<CategoriaDTO[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [showOnlyOutOfStock, setShowOnlyOutOfStock] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
@@ -110,6 +96,7 @@ export default function Home() {
   const [categoryError, setCategoryError] = useState<string>('');
   const [priceError, setPriceError] = useState<string>('');
   const [stockError, setStockError] = useState<string>('');
+  const [addBookError, setAddBookError] = useState<string>('');
 
   // Estados para controlar se o campo foi tocado
   const [titleTouched, setTitleTouched] = useState(false);
@@ -118,15 +105,37 @@ export default function Home() {
   const [priceTouched, setPriceTouched] = useState(false);
   const [stockTouched, setStockTouched] = useState(false);
 
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const lista = await listarTodosLivros();
+      setBooks(lista || []);
+    } catch {
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  useEffect(() => {
+    listarCategorias().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
   const filteredBooks = books.filter(book => {
-    const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         book.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || book.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesSearch = book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         book.autor.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || book.categoria === selectedCategory;
+    const matchesStock = !showOnlyOutOfStock || (book.estoque ?? 0) === 0;
+    return matchesSearch && matchesCategory && matchesStock;
   });
 
   const handleClearFilter = () => {
     setSelectedCategory('');
+    setShowOnlyOutOfStock(false);
     setIsFilterOpen(false);
   };
 
@@ -249,29 +258,36 @@ export default function Home() {
     setIsConfirmModalOpen(true);
   };
 
-  const handleConfirmAddBook = () => {
-    const book: Book = {
-      id: books.length + 1,
-      title: newBook.title,
-      author: newBook.author,
-      price: parseFloat(newBook.price),
-      category: newBook.category,
-      stock: parseInt(newBook.stock),
-      cover: newBook.cover || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop'
-    };
-
-    setBooks([...books, book]);
-    setIsConfirmModalOpen(false);
-    setIsModalOpen(false);
-    setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
-    setImagePreview('');
-    clearAllErrors();
-    setTitleTouched(false);
-    setAuthorTouched(false);
-    setCategoryTouched(false);
-    setPriceTouched(false);
-    setStockTouched(false);
-    setIsSuccessModalOpen(true);
+  const handleConfirmAddBook = async () => {
+    setAddBookError('');
+    const preco = Number(newBook.price);
+    const estoqueNum = parseInt(newBook.stock, 10);
+    try {
+      await criarLivro({
+        titulo: newBook.title.trim(),
+        autor: newBook.author.trim(),
+        preco: Number.isFinite(preco) ? preco : 0,
+        categoria: newBook.category.trim(),
+        estoque: Number.isInteger(estoqueNum) && estoqueNum >= 0 ? estoqueNum : 0,
+        imagemCapa: newBook.cover || undefined,
+      });
+      setIsConfirmModalOpen(false);
+      setIsModalOpen(false);
+      setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
+      setImagePreview('');
+      clearAllErrors();
+      setAddBookError('');
+      setTitleTouched(false);
+      setAuthorTouched(false);
+      setCategoryTouched(false);
+      setPriceTouched(false);
+      setStockTouched(false);
+      setIsSuccessModalOpen(true);
+      carregar();
+    } catch (err) {
+      setIsConfirmModalOpen(false);
+      setAddBookError(err instanceof Error ? err.message : 'Erro ao adicionar livro. Tente novamente.');
+    }
   };
 
   const handleCancelConfirm = () => {
@@ -283,13 +299,14 @@ export default function Home() {
   };
 
   const handleCloseModal = () => {
-    if (isFormFilled()) {
-      setIsCancelModalOpen(true);
-    } else {
-      setIsModalOpen(false);
-      setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
-      setImagePreview('');
-      clearAllErrors();
+      if (isFormFilled()) {
+        setIsCancelModalOpen(true);
+      } else {
+        setIsModalOpen(false);
+        setAddBookError('');
+        setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
+        setImagePreview('');
+        clearAllErrors();
       setTitleTouched(false);
       setAuthorTouched(false);
       setCategoryTouched(false);
@@ -301,6 +318,7 @@ export default function Home() {
   const handleConfirmCancel = () => {
     setIsCancelModalOpen(false);
     setIsModalOpen(false);
+    setAddBookError('');
     setNewBook({ title: '', author: '', price: '', category: '', stock: '', cover: '' });
     setImagePreview('');
     clearAllErrors();
@@ -331,7 +349,9 @@ export default function Home() {
     <Navbar>
       <Container>
         <Header>
-          <Title>Gerenciamento de Livraria</Title>
+          <EditablePageTitle pageKey="home" defaultTitle="Livros">
+            {(title) => <Title>{title}</Title>}
+          </EditablePageTitle>
           <SearchBar>
             <SearchIcon>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -369,23 +389,36 @@ export default function Home() {
                   >
                     Geral
                   </FilterOption>
-                  {categories.map(category => (
+                  {categories.map(cat => (
                     <FilterOption
-                      key={category}
-                      $active={selectedCategory === category}
+                      key={cat.id}
+                      $active={selectedCategory === cat.nome}
                       onClick={() => {
-                        setSelectedCategory(category);
+                        setSelectedCategory(cat.nome);
                         setIsFilterOpen(false);
                       }}
                     >
-                      {category}
+                      {cat.nome}
                     </FilterOption>
                   ))}
                 </FilterList>
               )}
             </FilterDropdown>
 
-            {selectedCategory && (
+            <EsgotadosFilterButton
+              type="button"
+              $active={showOnlyOutOfStock}
+              onClick={() => setShowOnlyOutOfStock(!showOnlyOutOfStock)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+              Somente esgotados
+            </EsgotadosFilterButton>
+
+            {(selectedCategory || showOnlyOutOfStock) && (
               <ClearFilter onClick={handleClearFilter}>
                 Limpar filtros
               </ClearFilter>
@@ -401,20 +434,28 @@ export default function Home() {
           </AddButton>
         </FilterSection>
 
-        {filteredBooks.length > 0 ? (
+        {loading ? (
+          <EmptyState>
+            <p>Carregando livros...</p>
+          </EmptyState>
+        ) : filteredBooks.length > 0 ? (
           <BooksGrid>
             {filteredBooks.map(book => (
               <BookCard key={book.id}>
-                <BookCover src={book.cover} alt={book.title} />
+                {book.imagemCapa ? (
+                  <BookCover src={book.imagemCapa} alt={book.titulo} />
+                ) : (
+                  <BookCoverPlaceholder>Sem capa</BookCoverPlaceholder>
+                )}
                 <BookInfo>
-                  <BookCategory>{book.category}</BookCategory>
-                  <BookTitle>{book.title}</BookTitle>
-                  <BookAuthor>{book.author}</BookAuthor>
+                  <BookCategory>{book.categoria}</BookCategory>
+                  <BookTitle>{book.titulo}</BookTitle>
+                  <BookAuthor>{book.autor}</BookAuthor>
                   
                   <PriceSection>
-                    <BookPrice>R$ {book.price.toFixed(2)}</BookPrice>
-                    <StockBadge $status={getStockStatus(book.stock)}>
-                      Estoque: {book.stock}
+                    <BookPrice>R$ {Number(book.preco).toFixed(2)}</BookPrice>
+                    <StockBadge $status={getStockStatus(book.estoque)}>
+                      Estoque: {book.estoque}
                     </StockBadge>
                   </PriceSection>
                   
@@ -452,6 +493,11 @@ export default function Home() {
               </ModalHeader>
 
               <ModalBody>
+                {addBookError && (
+                  <div style={{ marginBottom: 16, padding: '12px', background: 'rgba(239,68,68,0.15)', borderRadius: 8, color: '#f87171', fontSize: 14 }}>
+                    {addBookError}
+                  </div>
+                )}
                 <FormGroup>
                   <Label>Título do Livro *</Label>
                   <Input 
@@ -496,19 +542,18 @@ export default function Home() {
                   )}
                 </FormGroup>
 
+                <CategoryDropdownWrap>
                 <FormGroup>
                   <Label>Categoria *</Label>
-                  <Select 
+                  <FormDropdown
+                    options={categories.map(cat => ({ value: cat.nome, label: cat.nome }))}
                     value={newBook.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(v) => handleInputChange('category', v)}
                     onBlur={handleCategoryBlur}
-                    $hasError={!!categoryError}
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </Select>
+                    placeholder="Selecione uma categoria"
+                    hasError={!!categoryError}
+                    maxVisibleOptions={2}
+                  />
                   {categoryError && (
                     <FieldError>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -520,6 +565,7 @@ export default function Home() {
                     </FieldError>
                   )}
                 </FormGroup>
+                </CategoryDropdownWrap>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <FormGroup>

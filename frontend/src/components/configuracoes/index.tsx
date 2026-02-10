@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/navbar';
+import { useConfig } from '@/context/ConfigContext';
+import { DEFAULT_PAGE_TITLES } from '@/lib/config-loja';
+import { listarCategorias, criarCategoria, excluirCategoria, type CategoriaDTO } from '@/services/api';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
 import ErrorModal from '@/components/modals/errorModal';
@@ -66,18 +69,37 @@ import {
   BackupButton
 } from './styles';
 
-type SettingCategory = 'geral' | 'loja' | 'notificacoes' | 'seguranca' | 'backup' | 'aparencia';
+type SettingCategory = 'geral' | 'categorias' | 'titulos' | 'loja' | 'notificacoes' | 'seguranca' | 'backup' | 'aparencia';
+
+const PAGE_TITLE_KEYS: { key: string; label: string }[] = [
+  { key: 'home', label: 'Página Livros (menu e título)' },
+  { key: 'estoque', label: 'Página Estoque' },
+  { key: 'clientes', label: 'Página Clientes' },
+  { key: 'vendas', label: 'Página Vendas' },
+  { key: 'minhasVendas', label: 'Página Minhas Vendas' },
+  { key: 'relatorios', label: 'Página Relatórios' },
+  { key: 'dashboard', label: 'Página Dashboard' },
+  { key: 'configuracoes', label: 'Página Configurações' },
+];
 
 export default function Configuracoes() {
+  const { config, setConfig } = useConfig();
   const [activeCategory, setActiveCategory] = useState<SettingCategory>('geral');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Estados para configurações gerais
-  const [storeName, setStoreName] = useState('Entre Capítulos');
-  const [storeEmail, setStoreEmail] = useState('contato@entrecapitulos.com.br');
-  const [storePhone, setStorePhone] = useState('(11) 3456-7890');
-  const [storeAddress, setStoreAddress] = useState('Rua dos Livros, 123 - São Paulo, SP');
-  const [storeCNPJ, setStoreCNPJ] = useState('12.345.678/0001-90');
+  const [storeName, setStoreName] = useState(config.storeName);
+  const [storeEmail, setStoreEmail] = useState(config.storeEmail);
+  const [storePhone, setStorePhone] = useState(config.storePhone);
+  const [storeAddress, setStoreAddress] = useState(config.storeAddress);
+  const [storeCNPJ, setStoreCNPJ] = useState(config.storeCNPJ);
+
+  useEffect(() => {
+    setStoreName(config.storeName);
+    setStoreEmail(config.storeEmail);
+    setStorePhone(config.storePhone);
+    setStoreAddress(config.storeAddress);
+    setStoreCNPJ(config.storeCNPJ);
+  }, [config.storeName, config.storeEmail, config.storePhone, config.storeAddress, config.storeCNPJ]);
 
   // Estados para configurações de loja
   const [workingHours, setWorkingHours] = useState('Segunda a Sexta: 9h às 18h');
@@ -123,13 +145,25 @@ export default function Configuracoes() {
   const [showDeleteBackupSuccessModal, setShowDeleteBackupSuccessModal] = useState(false);
   const [selectedBackupId, setSelectedBackupId] = useState<number | null>(null);
 
+  const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
+  const [novaCategoria, setNovaCategoria] = useState('');
+  const [categoriasLoading, setCategoriasLoading] = useState(false);
+  const [showDeleteCategoriaModal, setShowDeleteCategoriaModal] = useState(false);
+  const [categoriaToDelete, setCategoriaToDelete] = useState<CategoriaDTO | null>(null);
+
   const handleSave = () => {
     setShowSaveConfirmModal(true);
   };
 
   const confirmSave = () => {
     setShowSaveConfirmModal(false);
-    console.log('Salvando configurações...');
+    setConfig({
+      storeName,
+      storeEmail,
+      storePhone,
+      storeAddress,
+      storeCNPJ,
+    });
     setHasChanges(false);
     setShowSuccessModal(true);
   };
@@ -212,6 +246,47 @@ export default function Configuracoes() {
     console.log('Baixando backup:', backupId);
   };
 
+  useEffect(() => {
+    if (activeCategory === 'categorias') {
+      setCategoriasLoading(true);
+      listarCategorias()
+        .then(setCategorias)
+        .catch(() => setCategorias([]))
+        .finally(() => setCategoriasLoading(false));
+    }
+  }, [activeCategory]);
+
+  const handleAddCategoria = () => {
+    const nome = novaCategoria.trim();
+    if (!nome) return;
+    setCategoriasLoading(true);
+    criarCategoria(nome)
+      .then((c) => {
+        setCategorias((prev) => [...prev, c].sort((a, b) => a.nome.localeCompare(b.nome)));
+        setNovaCategoria('');
+      })
+      .catch((e) => alert(e?.message || 'Erro ao adicionar categoria.'))
+      .finally(() => setCategoriasLoading(false));
+  };
+
+  const handleRequestDeleteCategoria = (cat: CategoriaDTO) => {
+    setCategoriaToDelete(cat);
+    setShowDeleteCategoriaModal(true);
+  };
+
+  const handleConfirmDeleteCategoria = () => {
+    if (!categoriaToDelete) return;
+    setShowDeleteCategoriaModal(false);
+    setCategoriasLoading(true);
+    excluirCategoria(categoriaToDelete.id)
+      .then(() => setCategorias((prev) => prev.filter((c) => c.id !== categoriaToDelete.id)))
+      .catch((e) => alert(e?.message || 'Erro ao excluir categoria.'))
+      .finally(() => {
+        setCategoriasLoading(false);
+        setCategoriaToDelete(null);
+      });
+  };
+
   const menuItems = [
     {
       id: 'geral' as SettingCategory,
@@ -220,6 +295,28 @@ export default function Configuracoes() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2M1 12h6m6 0h6m-13.2 5.2l4.2-4.2m6 0l4.2 4.2"/>
+        </svg>
+      )
+    },
+    {
+      id: 'categorias' as SettingCategory,
+      label: 'Categorias',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          <line x1="12" y1="6" x2="12" y2="14"/>
+          <line x1="9" y1="10" x2="15" y2="10"/>
+        </svg>
+      )
+    },
+    {
+      id: 'titulos' as SettingCategory,
+      label: 'Títulos das páginas',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
       )
     },
@@ -424,6 +521,90 @@ export default function Configuracoes() {
                       Alterar Foto
                     </UploadButton>
                   </ProfileSection>
+                </Section>
+              </>
+            )}
+
+            {/* TÍTULOS DAS PÁGINAS */}
+            {activeCategory === 'titulos' && (
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Títulos das páginas</SectionTitle>
+                  <SectionDescription>
+                    Altere os títulos exibidos no menu e no topo de cada página. As alterações valem para administradores e vendedores.
+                  </SectionDescription>
+                </SectionHeader>
+                <SettingsGroup>
+                  {PAGE_TITLE_KEYS.map(({ key, label }) => (
+                    <SettingItem key={key}>
+                      <SettingLabel>{label}</SettingLabel>
+                      <SettingControl>
+                        <Input
+                          type="text"
+                          value={config.pageTitles?.[key] ?? DEFAULT_PAGE_TITLES[key] ?? ''}
+                          onChange={(e) => setConfig({ pageTitles: { ...config.pageTitles, [key]: e.target.value } })}
+                          placeholder={DEFAULT_PAGE_TITLES[key] ?? ''}
+                        />
+                      </SettingControl>
+                    </SettingItem>
+                  ))}
+                </SettingsGroup>
+              </Section>
+            )}
+
+            {/* CATEGORIAS */}
+            {activeCategory === 'categorias' && (
+              <>
+                <Section>
+                  <SectionHeader>
+                    <SectionTitle>Categorias de livros</SectionTitle>
+                    <SectionDescription>
+                      Adicione ou remova categorias usadas nos livros. Não é possível excluir uma categoria que esteja em uso.
+                    </SectionDescription>
+                  </SectionHeader>
+
+                  <SettingsGroup>
+                    <SettingItem>
+                      <SettingLabel>Nova categoria</SettingLabel>
+                      <SettingControl style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <Input
+                          type="text"
+                          value={novaCategoria}
+                          onChange={(e) => setNovaCategoria(e.target.value)}
+                          placeholder="Ex: Romance, Didático"
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddCategoria()}
+                        />
+                        <Button type="button" onClick={handleAddCategoria} disabled={categoriasLoading || !novaCategoria.trim()}>
+                          Adicionar
+                        </Button>
+                      </SettingControl>
+                    </SettingItem>
+                  </SettingsGroup>
+
+                  <div style={{ marginTop: '24px' }}>
+                    <SettingLabel style={{ marginBottom: '12px', display: 'block' }}>Categorias existentes</SettingLabel>
+                    {categoriasLoading && !categorias.length ? (
+                      <p style={{ color: '#666' }}>Carregando...</p>
+                    ) : categorias.length === 0 ? (
+                      <p style={{ color: '#666' }}>Nenhuma categoria cadastrada. Adicione acima.</p>
+                    ) : (
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {categorias.map((cat) => (
+                          <li key={cat.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#f5f5f5', borderRadius: '8px' }}>
+                            <span>{cat.nome}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRequestDeleteCategoria(cat)}
+                              disabled={categoriasLoading}
+                              style={{ padding: '6px 10px', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '6px', cursor: 'pointer', background: 'transparent' }}
+                            >
+                              Excluir
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </Section>
               </>
             )}
@@ -1130,6 +1311,16 @@ export default function Configuracoes() {
         message="Backup excluído com sucesso!"
         onClose={() => setShowDeleteBackupSuccessModal(false)}
         buttonText="Continuar"
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteCategoriaModal}
+        title="Excluir categoria"
+        message={categoriaToDelete ? `Tem certeza que deseja excluir a categoria "${categoriaToDelete.nome}"? Não será possível excluir se houver livros vinculados.` : ''}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDeleteCategoria}
+        onCancel={() => { setShowDeleteCategoriaModal(false); setCategoriaToDelete(null); }}
       />
     </Navbar>
   );

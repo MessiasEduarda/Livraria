@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+const DEFAULT_STORE = {
+  storeName: 'Entre Capítulos',
+  storeEmail: 'contato@entrecapitulos.com.br',
+  storePhone: '(11) 3456-7890',
+  storeAddress: 'Rua dos Livros, 123 - São Paulo, SP',
+};
+
 export async function POST(request: NextRequest) {
   try {
-    const { clientEmail, clientName, pdfBuffer, fileName } = await request.json();
+    const body = await request.json();
+    const { clientEmail, clientName, pdfBuffer, fileName, storeConfig } = body;
+    const store = storeConfig && typeof storeConfig === 'object' ? { ...DEFAULT_STORE, ...storeConfig } : DEFAULT_STORE;
 
     // Configurar o transporter do nodemailer
     // ATENÇÃO: Configure suas credenciais de email aqui
@@ -23,11 +32,11 @@ export async function POST(request: NextRequest) {
     // Configurar o email
     const mailOptions = {
       from: {
-        name: 'Entre Capítulos',
-        address: process.env.SMTP_USER || 'noreply@entrecapitulos.com.br'
+        name: store.storeName,
+        address: process.env.SMTP_USER || store.storeEmail || 'noreply@exemplo.com'
       },
       to: clientEmail,
-      subject: 'Recibo de Compra - Entre Capítulos',
+      subject: `Recibo de Compra - ${store.storeName}`,
       html: `
         <!DOCTYPE html>
         <html lang="pt-BR">
@@ -128,7 +137,7 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">📚 Entre Capítulos</div>
+              <div class="logo">📚 ${store.storeName}</div>
               <div class="subtitle">Sistema de Gestão de Livraria</div>
             </div>
             
@@ -136,7 +145,7 @@ export async function POST(request: NextRequest) {
               <div class="greeting">Olá, ${clientName}! 👋</div>
               
               <p class="message">
-                Agradecemos por sua compra na <strong>Entre Capítulos</strong>! 
+                Agradecemos por sua compra na <strong>${store.storeName}</strong>! 
               </p>
               
               <p class="message">
@@ -167,15 +176,14 @@ export async function POST(request: NextRequest) {
               </div>
               
               <div class="contact-info">
-                <strong>Entre Capítulos</strong><br>
-                Rua dos Livros, 123 - Centro<br>
-                São Paulo, SP - CEP 01000-000<br>
-                📞 (11) 3456-7890<br>
-                ✉️ <a href="mailto:contato@entrecapitulos.com.br">contato@entrecapitulos.com.br</a>
+                <strong>${store.storeName}</strong><br>
+                ${store.storeAddress || ''}<br>
+                ${store.storePhone ? `📞 ${store.storePhone}<br>` : ''}
+                ${store.storeEmail ? `✉️ <a href="mailto:${store.storeEmail}">${store.storeEmail}</a>` : ''}
               </div>
               
               <div class="footer-text" style="margin-top: 20px;">
-                © 2026 Entre Capítulos - Todos os direitos reservados
+                © ${new Date().getFullYear()} ${store.storeName} - Todos os direitos reservados
               </div>
             </div>
           </div>

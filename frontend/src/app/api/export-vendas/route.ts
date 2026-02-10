@@ -33,9 +33,18 @@ interface Filters {
   quickFilter: string;
 }
 
+const DEFAULT_STORE = {
+  storeName: 'Entre Capítulos',
+  storeEmail: 'contato@entrecapitulos.com.br',
+  storePhone: '(11) 3456-7890',
+  storeAddress: 'Rua dos Livros, 123 - São Paulo, SP',
+};
+
 export async function POST(request: NextRequest) {
   try {
-    const { sales, stats, filters }: { sales: Sale[], stats: Stats, filters: Filters } = await request.json();
+    const body = await request.json();
+    const { sales, stats, filters, storeConfig } = body as { sales: Sale[]; stats: Stats; filters: Filters; storeConfig?: typeof DEFAULT_STORE };
+    const store = storeConfig && typeof storeConfig === 'object' ? { ...DEFAULT_STORE, ...storeConfig } : DEFAULT_STORE;
 
     // Criar PDF usando jsPDF
     const doc = new jsPDF({
@@ -61,7 +70,7 @@ export async function POST(request: NextRequest) {
     doc.setFontSize(10);
     doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
     doc.setFont('helvetica', 'normal');
-    doc.text('Entre Capítulos - Sistema de Gestão de Livraria', 105, yPosition, { align: 'center' });
+    doc.text(`${store.storeName} - Sistema de Gestão de Livraria`, 105, yPosition, { align: 'center' });
 
     yPosition += 5;
     const now = new Date();
@@ -240,9 +249,9 @@ export async function POST(request: NextRequest) {
         1: { cellWidth: 22 },
         2: { cellWidth: 30 },
         3: { cellWidth: 22 },
-        4: { cellWidth: 50 },
+        4: { cellWidth: 44 },
         5: { cellWidth: 20, halign: 'right' },
-        6: { cellWidth: 13 }
+        6: { cellWidth: 19 }
       },
       margin: { left: 20, right: 20 }
     });
@@ -269,7 +278,7 @@ export async function POST(request: NextRequest) {
         { align: 'center' }
       );
       doc.text(
-        '© 2026 Entre Capítulos - Todos os direitos reservados',
+        `© ${new Date().getFullYear()} ${store.storeName} - Todos os direitos reservados`,
         105,
         footerY + 10,
         { align: 'center' }

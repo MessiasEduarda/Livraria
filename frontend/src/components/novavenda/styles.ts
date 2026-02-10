@@ -14,14 +14,29 @@ const fadeInDown = keyframes`
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 20px;
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
   }
 `;
 
@@ -55,12 +70,17 @@ export const Badge = styled.div`
 
 export const MainContent = styled.div`
   display: grid;
-  grid-template-columns: 1fr 450px;  // Layout de 2 colunas
+  grid-template-columns: 1fr 450px;
   gap: 24px;
-  width: 100%;;
+  width: 100%;
 
-  @media (max-width: 1024px) {  // Mudado de 1400px para 1024px
-    grid-template-columns: 1fr;  // Só muda para 1 coluna em telas pequenas
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 16px;
   }
 `;
 
@@ -74,10 +94,11 @@ export const RightPanel = styled.div`
   position: sticky;
   top: 100px;
   height: fit-content;
-  min-width: 450px;  // NOVO: garante largura mínima
+  min-width: 0;
 
   @media (max-width: 1024px) {
     position: relative;
+    min-width: 0;
     top: 0;
     min-width: auto;
   }
@@ -125,15 +146,16 @@ export const Label = styled.label`
   margin-bottom: 8px;
 `;
 
-export const Input = styled.input<{ $hasError?: boolean }>`
+export const Input = styled.input<{ $hasError?: boolean; $withTrocar?: boolean }>`
   width: 100%;
   padding: 12px 16px;
+  padding-right: ${props => props.$withTrocar ? '72px' : '16px'};
   border: 2px solid ${props => props.$hasError ? '#ab031d' : '#ddd'};
   border-radius: 1000px;
   font-size: 0.95rem;
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   transition: all 0.3s ease;
-  color: #333;
+  color: #1a1a1a;
 
   &:focus {
     outline: none;
@@ -148,6 +170,37 @@ export const Input = styled.input<{ $hasError?: boolean }>`
   &:disabled {
     background-color: #f5f5f5;
     cursor: not-allowed;
+  }
+`;
+
+export const ClientInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+/* Campo buscar cliente: mesmo padrão do dropdown de categoria (borda 12px) */
+export const ClientSearchInput = styled(Input)`
+  border-radius: 12px;
+`;
+
+export const ClientTrocarBtn = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
+  color: #3CAD8C;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+
+  &:hover {
+    background-color: rgba(60, 173, 140, 0.1);
+    color: #2a8569;
   }
 `;
 
@@ -234,7 +287,7 @@ export const SellerList = styled.div`
 
 export const SellerOption = styled.div<{ $active?: boolean }>`
   padding: 12px 16px;
-  color: ${props => props.$active ? '#3CAD8C' : '#333'};
+  color: #1a1a1a;
   font-weight: ${props => props.$active ? '600' : '400'};
   font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
   background-color: ${props => props.$active ? '#e8f5e0' : 'white'};
@@ -244,6 +297,68 @@ export const SellerOption = styled.div<{ $active?: boolean }>`
 
   &:hover {
     background-color: #f8fdf5;
+    color: #2a8569;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+  }
+`;
+
+export const AddNewClientOption = styled.div<{ $hasResults?: boolean }>`
+  padding: 12px 16px;
+  cursor: pointer;
+  border-top: ${props => props.$hasResults ? '1px solid #f0f0f0' : 'none'};
+  background: #f0fdf4;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #dcfce7;
+  }
+`;
+
+/* Lista do dropdown de cliente – mesmo padrão do FormDropdown (categoria) */
+export const ClientDropdownList = styled.div`
+  position: relative;
+  margin-top: 6px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+
+  @keyframes slideDownClient {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  animation: slideDownClient 0.2s ease;
+`;
+
+export const ClientDropdownOption = styled.div`
+  padding: 12px 16px;
+  color: #333;
+  font-weight: 400;
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #e8f5f3;
     color: #3CAD8C;
   }
 
@@ -336,6 +451,17 @@ export const ProductImage = styled.img`
   height: 140px;
   object-fit: cover;
   background-color: #e0e0e0;
+`;
+
+export const ProductImagePlaceholder = styled.div`
+  width: 100%;
+  height: 140px;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.8rem;
 `;
 
 export const ProductInfo = styled.div`
@@ -434,8 +560,9 @@ export const CartHeader = styled.div`
   }
 `;
 
+/* Altura para caber exatamente 2 itens (~129px cada), depois scroll */
 export const CartItems = styled.div`
-  max-height: 350px;
+  max-height: 258px;
   overflow-y: auto;
   padding: 16px;
 
@@ -482,6 +609,20 @@ export const ItemImage = styled.img`
   border-radius: 8px;
 `;
 
+export const ItemImagePlaceholder = styled.div`
+  width: 60px;
+  height: 85px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.6rem;
+  text-align: center;
+  padding: 4px;
+`;
+
 export const ItemDetails = styled.div`
   display: flex;
   flex-direction: column;
@@ -498,8 +639,17 @@ export const ItemName = styled.div`
 
 export const ItemPrice = styled.div`
   font-size: 0.8rem;
-  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  font-family: var(--font-roboto-regular), 'Roboto', sans-serif;
   color: #666;
+`;
+
+export const CartItemTotal = styled.div`
+  text-align: right;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: var(--font-roboto-medium), 'Roboto', sans-serif;
+  color: #1a1a1a;
 `;
 
 export const QuantityControl = styled.div`
@@ -569,28 +719,84 @@ export const RemoveButton = styled.button`
   }
 `;
 
-export const PaymentMethod = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 12px;
+/* Dropdown forma de pagamento – mesmo padrão do dropdown buscar cliente */
+export const PaymentDropdownWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
 `;
 
-export const PaymentOption = styled.button<{ $active: boolean }>`
-  padding: 12px;
-  border: 2px solid ${props => props.$active ? '#3CAD8C' : '#ddd'};
-  border-radius: 10px;
-  background-color: ${props => props.$active ? '#e8f5e0' : 'white'};
-  color: ${props => props.$active ? '#3CAD8C' : '#666'};
-  font-size: 0.9rem;
-  font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
-  font-weight: 600;
+export const PaymentDropdownTrigger = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  background: white;
+  font-size: 0.95rem;
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  color: #1a1a1a;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  text-align: left;
 
   &:hover {
     border-color: #3CAD8C;
-    background-color: ${props => props.$active ? '#e8f5e0' : '#f8fdf5'};
+  }
+  &:focus {
+    outline: none;
+    border-color: #3CAD8C;
+    box-shadow: 0 0 0 3px rgba(60, 173, 140, 0.1);
+  }
+`;
+
+export const PaymentDropdownList = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 6px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+
+  @keyframes slideDownPayment {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  animation: slideDownPayment 0.2s ease;
+`;
+
+export const PaymentDropdownOption = styled.div`
+  padding: 12px 16px;
+  color: #333;
+  font-weight: 400;
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #e8f5f3;
+    color: #3CAD8C;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
   }
 `;
 

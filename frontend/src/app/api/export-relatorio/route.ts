@@ -24,6 +24,13 @@ interface ReportData {
   }>;
 }
 
+const DEFAULT_STORE = {
+  storeName: 'Entre Capítulos',
+  storeEmail: 'contato@entrecapitulos.com.br',
+  storePhone: '(11) 3456-7890',
+  storeAddress: 'Rua dos Livros, 123 - São Paulo, SP',
+};
+
 // Função para calcular estatísticas reais dos dados
 function calculateStats(salesData: ReportData['salesData']) {
   const totalRevenue = salesData.reduce((sum, sale) => sum + sale.total, 0);
@@ -40,7 +47,7 @@ function calculateStats(salesData: ReportData['salesData']) {
 }
 
 // Função para gerar PDF
-async function generatePDF(data: ReportData) {
+async function generatePDF(data: ReportData, store: typeof DEFAULT_STORE) {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -68,7 +75,7 @@ async function generatePDF(data: ReportData) {
   doc.setFontSize(10);
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.setFont('helvetica', 'normal');
-  doc.text('Entre Capítulos - Sistema de Gestão de Livraria', 105, yPosition, { align: 'center' });
+  doc.text(`${store.storeName} - Sistema de Gestão de Livraria`, 105, yPosition, { align: 'center' });
 
   yPosition += 5;
   const now = new Date();
@@ -239,7 +246,7 @@ async function generatePDF(data: ReportData) {
       { align: 'center' }
     );
     doc.text(
-      '© 2026 Entre Capítulos - Todos os direitos reservados',
+      `© ${new Date().getFullYear()} ${store.storeName} - Todos os direitos reservados`,
       105,
       footerY + 10,
       { align: 'center' }
@@ -258,14 +265,14 @@ async function generatePDF(data: ReportData) {
 }
 
 // Função para gerar Excel
-async function generateExcel(data: ReportData) {
+async function generateExcel(data: ReportData, store: typeof DEFAULT_STORE) {
   const workbook = new ExcelJS.Workbook();
   
   // Calcular estatísticas reais dos dados
   const stats = calculateStats(data.salesData);
   
   // Propriedades do workbook
-  workbook.creator = 'Entre Capítulos';
+  workbook.creator = store.storeName;
   workbook.created = new Date();
   
   // Sheet 1: Resumo
@@ -284,7 +291,7 @@ async function generateExcel(data: ReportData) {
   // Subtítulo
   summarySheet.mergeCells('A2:F2');
   const subtitleCell = summarySheet.getCell('A2');
-  subtitleCell.value = 'Entre Capítulos - Sistema de Gestão de Livraria';
+  subtitleCell.value = `${store.storeName} - Sistema de Gestão de Livraria`;
   subtitleCell.font = { size: 12, italic: true };
   subtitleCell.alignment = { horizontal: 'center' };
 
@@ -413,10 +420,12 @@ function generateCSV(data: ReportData) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { format, data }: { format: 'pdf' | 'excel' | 'csv', data: ReportData } = await request.json();
+    const body = await request.json();
+    const { format, data, storeConfig } = body as { format: 'pdf' | 'excel' | 'csv'; data: ReportData; storeConfig?: typeof DEFAULT_STORE };
+    const store = storeConfig && typeof storeConfig === 'object' ? { ...DEFAULT_STORE, ...storeConfig } : DEFAULT_STORE;
 
     if (format === 'pdf') {
-      const pdfBuffer = await generatePDF(data);
+      const pdfBuffer = await generatePDF(data, store);
       
       return new NextResponse(Buffer.from(pdfBuffer), {
         headers: {
@@ -426,7 +435,7 @@ export async function POST(request: NextRequest) {
       });
     } 
     else if (format === 'excel') {
-      const excelBuffer = await generateExcel(data);
+      const excelBuffer = await generateExcel(data, store);
       
       return new NextResponse(excelBuffer as any, {
         headers: {

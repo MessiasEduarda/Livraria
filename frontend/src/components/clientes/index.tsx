@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import EditablePageTitle from '@/components/EditablePageTitle';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
+import { listarClientes, criarCliente, listarCategorias, type ClienteDTO, type CategoriaDTO } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
+import FormDropdown from '@/components/FormDropdown';
 import {
   validateName,
   validateEmail,
@@ -39,6 +43,7 @@ import {
   StatInfo,
   StatLabel,
   StatValue,
+  TableWrapper,
   ClientsTable,
   TableHeader,
   TableRow,
@@ -73,185 +78,12 @@ import {
   FieldError
 } from './styles';
 
-interface Client {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  status: 'active' | 'inactive' | 'vip';
-  purchaseCount: number;
-  totalSpent: number;
-  registrationDate: string;
-  category: string;
-  cpf: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
+function statusDisplay(s?: string): 'active' | 'inactive' | 'vip' {
+  if (!s) return 'active';
+  const lower = s.toLowerCase();
+  if (lower === 'vip' || lower === 'inactive') return lower;
+  return 'active';
 }
-
-const clientsData: Client[] = [
-  { 
-    id: 1, 
-    name: "João Silva", 
-    email: "joao.silva@email.com", 
-    phone: "(11) 98765-4321", 
-    status: "vip", 
-    purchaseCount: 45, 
-    totalSpent: 3850.50,
-    registrationDate: "2024-01-15",
-    category: "Ficção",
-    cpf: "123.456.789-00",
-    endereco: "Rua das Flores, 123",
-    cidade: "São Paulo",
-    estado: "SP",
-    cep: "01234-567"
-  },
-  { 
-    id: 2, 
-    name: "Maria Santos", 
-    email: "maria.santos@email.com", 
-    phone: "(11) 97654-3210", 
-    status: "active", 
-    purchaseCount: 12, 
-    totalSpent: 980.90,
-    registrationDate: "2024-03-22",
-    category: "Tecnologia",
-    cpf: "234.567.890-11",
-    endereco: "Av. Paulista, 456",
-    cidade: "São Paulo",
-    estado: "SP",
-    cep: "01310-100"
-  },
-  { 
-    id: 3, 
-    name: "Pedro Costa", 
-    email: "pedro.costa@email.com", 
-    phone: "(11) 96543-2109", 
-    status: "active", 
-    purchaseCount: 28, 
-    totalSpent: 2150.30,
-    registrationDate: "2023-11-08",
-    category: "História",
-    cpf: "345.678.901-22",
-    endereco: "Rua do Catete, 789",
-    cidade: "Rio de Janeiro",
-    estado: "RJ",
-    cep: "22220-000"
-  },
-  { 
-    id: 4, 
-    name: "Ana Oliveira", 
-    email: "ana.oliveira@email.com", 
-    phone: "(11) 95432-1098", 
-    status: "vip", 
-    purchaseCount: 67, 
-    totalSpent: 5240.80,
-    registrationDate: "2023-06-12",
-    category: "Fantasia",
-    cpf: "456.789.012-33",
-    endereco: "Av. Afonso Pena, 321",
-    cidade: "Belo Horizonte",
-    estado: "MG",
-    cep: "30130-001"
-  },
-  { 
-    id: 5, 
-    name: "Carlos Mendes", 
-    email: "carlos.mendes@email.com", 
-    phone: "(11) 94321-0987", 
-    status: "active", 
-    purchaseCount: 8, 
-    totalSpent: 645.20,
-    registrationDate: "2025-01-05",
-    category: "Tecnologia",
-    cpf: "567.890.123-44",
-    endereco: "Rua XV de Novembro, 654",
-    cidade: "Curitiba",
-    estado: "PR",
-    cep: "80020-310"
-  },
-  { 
-    id: 6, 
-    name: "Juliana Rocha", 
-    email: "juliana.rocha@email.com", 
-    phone: "(11) 93210-9876", 
-    status: "inactive", 
-    purchaseCount: 3, 
-    totalSpent: 180.50,
-    registrationDate: "2024-08-20",
-    category: "Autoajuda",
-    cpf: "678.901.234-55",
-    endereco: "Rua das Acácias, 987",
-    cidade: "Porto Alegre",
-    estado: "RS",
-    cep: "90010-000"
-  },
-  { 
-    id: 7, 
-    name: "Roberto Lima", 
-    email: "roberto.lima@email.com", 
-    phone: "(11) 92109-8765", 
-    status: "active", 
-    purchaseCount: 19, 
-    totalSpent: 1420.70,
-    registrationDate: "2024-02-18",
-    category: "Filosofia",
-    cpf: "789.012.345-66",
-    endereco: "Av. Brasil, 555",
-    cidade: "Brasília",
-    estado: "DF",
-    cep: "70040-020"
-  },
-  { 
-    id: 8, 
-    name: "Fernanda Alves", 
-    email: "fernanda.alves@email.com", 
-    phone: "(11) 91098-7654", 
-    status: "vip", 
-    purchaseCount: 52, 
-    totalSpent: 4320.90,
-    registrationDate: "2023-09-03",
-    category: "Ficção",
-    cpf: "890.123.456-77",
-    endereco: "Rua da Praia, 222",
-    cidade: "Salvador",
-    estado: "BA",
-    cep: "40020-000"
-  },
-  { 
-    id: 9, 
-    name: "Lucas Martins", 
-    email: "lucas.martins@email.com", 
-    phone: "(11) 90987-6543", 
-    status: "active", 
-    purchaseCount: 15, 
-    totalSpent: 1180.40,
-    registrationDate: "2024-07-11",
-    category: "Fantasia",
-    cpf: "901.234.567-88",
-    endereco: "Av. Atlântica, 333",
-    cidade: "Fortaleza",
-    estado: "CE",
-    cep: "60015-000"
-  },
-  { 
-    id: 10, 
-    name: "Beatriz Souza", 
-    email: "beatriz.souza@email.com", 
-    phone: "(11) 89876-5432", 
-    status: "inactive", 
-    purchaseCount: 2, 
-    totalSpent: 95.80,
-    registrationDate: "2025-01-28",
-    category: "História",
-    cpf: "012.345.678-99",
-    endereco: "Rua das Palmeiras, 444",
-    cidade: "Recife",
-    estado: "PE",
-    cep: "50010-000"
-  },
-];
 
 const statusOptions = [
   { label: "Todos", value: "all" },
@@ -260,12 +92,15 @@ const statusOptions = [
   { label: "Inativos", value: "inactive" }
 ];
 
-const categories = ["Ficção", "Tecnologia", "Fantasia", "História", "Autoajuda", "Filosofia"];
 const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
 export default function Clientes() {
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>(clientsData);
+  const { user } = useAuth();
+  const isAdmin = user?.admin === true;
+  const [clients, setClients] = useState<ClienteDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<CategoriaDTO[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
@@ -282,7 +117,7 @@ export default function Clientes() {
     estado: '',
     cep: '',
     category: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive' | 'vip'
   });
 
   const [originalClient, setOriginalClient] = useState({
@@ -295,7 +130,7 @@ export default function Clientes() {
     estado: '',
     cep: '',
     category: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive' | 'vip'
   });
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -326,6 +161,30 @@ export default function Clientes() {
   const [estadoTouched, setEstadoTouched] = useState(false);
   const [cepTouched, setCepTouched] = useState(false);
   const [categoryTouched, setCategoryTouched] = useState(false);
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const statusParam = selectedStatus !== 'all' ? selectedStatus.toUpperCase() : undefined;
+      const res = await listarClientes({ status: statusParam, page: 0, size: 1000 });
+      const list = (res && typeof res === 'object' && 'content' in res && Array.isArray((res as { content: ClienteDTO[] }).content))
+        ? (res as { content: ClienteDTO[] }).content
+        : [];
+      setClients(list);
+    } catch {
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedStatus]);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  useEffect(() => {
+    listarCategorias().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
   // Verificar se houve alterações
   useEffect(() => {
@@ -488,33 +347,31 @@ export default function Clientes() {
   };
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.phone.includes(searchTerm);
-    
+    const matchesSearch = !searchTerm.trim() ||
+      client.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.telefone && client.telefone.includes(searchTerm));
     let matchesStatus = true;
     if (selectedStatus !== 'all') {
-      matchesStatus = client.status === selectedStatus;
+      matchesStatus = statusDisplay(client.status) === selectedStatus;
     }
-
     let matchesQuickFilter = true;
     if (quickFilter === 'vip') {
-      matchesQuickFilter = client.status === 'vip';
-    } else if (quickFilter === 'recent') {
+      matchesQuickFilter = statusDisplay(client.status) === 'vip';
+    } else if (quickFilter === 'recent' && client.dataCadastro) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      matchesQuickFilter = new Date(client.registrationDate) >= thirtyDaysAgo;
+      matchesQuickFilter = new Date(client.dataCadastro) >= thirtyDaysAgo;
     } else if (quickFilter === 'top') {
-      matchesQuickFilter = client.purchaseCount >= 20;
+      matchesQuickFilter = (client.quantidadeCompras ?? 0) >= 20;
     }
-    
     return matchesSearch && matchesStatus && matchesQuickFilter;
   });
 
   const totalClients = clients.length;
-  const activeClients = clients.filter(c => c.status === 'active' || c.status === 'vip').length;
-  const vipClients = clients.filter(c => c.status === 'vip').length;
-  const totalRevenue = clients.reduce((acc, client) => acc + client.totalSpent, 0);
+  const activeClients = clients.filter(c => ['ACTIVE', 'active', 'VIP', 'vip'].includes(c.status || '')).length;
+  const vipClients = clients.filter(c => statusDisplay(c.status) === 'vip').length;
+  const totalRevenue = clients.reduce((acc, c) => acc + (c.totalGasto ?? 0), 0);
 
   const handleClearFilters = () => {
     setSelectedStatus('all');
@@ -609,36 +466,31 @@ export default function Clientes() {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmModal(false);
-
-    // Simular salvamento
-    setTimeout(() => {
-      const client: Client = {
-        id: clients.length + 1,
-        name: newClient.name,
-        email: newClient.email,
-        phone: newClient.phone,
-        cpf: newClient.cpf,
-        endereco: newClient.endereco,
-        cidade: newClient.cidade,
-        estado: newClient.estado,
-        cep: newClient.cep,
-        status: newClient.status,
-        purchaseCount: 0,
-        totalSpent: 0,
-        registrationDate: new Date().toISOString().split('T')[0],
-        category: newClient.category
-      };
-
-      setClients([...clients, client]);
+    try {
+      await criarCliente({
+        nome: newClient.name.trim(),
+        email: newClient.email.trim(),
+        telefone: newClient.phone.trim(),
+        cpf: newClient.cpf.trim(),
+        endereco: newClient.endereco.trim() || undefined,
+        cidade: newClient.cidade.trim() || undefined,
+        estado: newClient.estado || undefined,
+        cep: newClient.cep.trim() || undefined,
+        categoriaPreferida: newClient.category || undefined,
+        status: newClient.status.toUpperCase(),
+      });
       setShowSuccessModal(true);
-    }, 500);
+      handleCloseModal();
+      carregar();
+    } catch {
+      setShowSuccessModal(false);
+    }
   };
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
-    handleCloseModal();
   };
 
   const handleCloseModal = () => {
@@ -713,7 +565,9 @@ export default function Clientes() {
     <Navbar>
       <Container>
         <Header>
-          <Title>Gestão de Clientes</Title>
+          <EditablePageTitle pageKey="clientes" defaultTitle="Clientes">
+            {(title) => <Title>{title}</Title>}
+          </EditablePageTitle>
           <SearchBar>
             <SearchIcon>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -861,7 +715,12 @@ export default function Clientes() {
           </AddButton>
         </FilterSection>
 
-        {filteredClients.length > 0 ? (
+        {loading ? (
+          <EmptyState>
+            <p>Carregando clientes...</p>
+          </EmptyState>
+        ) : filteredClients.length > 0 ? (
+          <TableWrapper>
           <ClientsTable>
             <TableHeader>
               <TableRow $isHeader>
@@ -877,31 +736,31 @@ export default function Clientes() {
                 <TableRow key={client.id}>
                   <TableCell>
                     <ClientDetails>
-                      <ClientAvatar $status={client.status}>
-                        {getInitials(client.name)}
+                      <ClientAvatar $status={statusDisplay(client.status)}>
+                        {getInitials(client.nome)}
                       </ClientAvatar>
                       <div>
-                        <ClientName>{client.name}</ClientName>
+                        <ClientName>{client.nome}</ClientName>
                         <ClientEmail>{client.email}</ClientEmail>
                       </div>
                     </ClientDetails>
                   </TableCell>
                   <TableCell>
-                    <ClientPhone>{client.phone}</ClientPhone>
+                    <ClientPhone>{client.telefone || '—'}</ClientPhone>
                     <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '4px' }}>
-                      Desde {formatDate(client.registrationDate)}
+                      {client.dataCadastro ? `Desde ${formatDate(client.dataCadastro)}` : '—'}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge $status={client.status}>
-                      {client.status === 'active' ? 'Ativo' : 
-                       client.status === 'vip' ? 'VIP' : 'Inativo'}
+                    <StatusBadge $status={statusDisplay(client.status)}>
+                      {statusDisplay(client.status) === 'active' ? 'Ativo' :
+                       statusDisplay(client.status) === 'vip' ? 'VIP' : 'Inativo'}
                     </StatusBadge>
                   </TableCell>
                   <TableCell>
-                    <PurchaseCount>{client.purchaseCount} compras</PurchaseCount>
+                    <PurchaseCount>{client.quantidadeCompras ?? 0} compras</PurchaseCount>
                     <div style={{ fontSize: '0.85rem', color: '#0b4200', fontWeight: '600', marginTop: '4px' }}>
-                      R$ {formatCurrency(client.totalSpent)}
+                      R$ {formatCurrency(client.totalGasto ?? 0)}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -925,6 +784,7 @@ export default function Clientes() {
               ))}
             </tbody>
           </ClientsTable>
+          </TableWrapper>
         ) : (
           <EmptyState>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -1092,17 +952,15 @@ export default function Clientes() {
 
                   <FormGroup>
                     <Label>Estado *</Label>
-                    <Select 
+                    <FormDropdown
+                      options={estados.map(uf => ({ value: uf, label: uf }))}
                       value={newClient.estado}
-                      onChange={(e) => handleInputChange('estado', e.target.value)}
+                      onChange={(v) => handleInputChange('estado', v)}
                       onBlur={handleEstadoBlur}
-                      $hasError={!!estadoError}
-                    >
-                      <option value="">UF</option>
-                      {estados.map(uf => (
-                        <option key={uf} value={uf}>{uf}</option>
-                      ))}
-                    </Select>
+                      placeholder="UF"
+                      hasError={!!estadoError}
+                      maxVisibleOptions={3}
+                    />
                     {estadoError && (
                       <FieldError>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1141,17 +999,15 @@ export default function Clientes() {
 
                 <FormGroup>
                   <Label>Categoria de Interesse *</Label>
-                  <Select 
+                  <FormDropdown
+                    options={categories.map(cat => ({ value: cat.nome, label: cat.nome }))}
                     value={newClient.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(v) => handleInputChange('category', v)}
                     onBlur={handleCategoryBlur}
-                    $hasError={!!categoryError}
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </Select>
+                    placeholder="Selecione uma categoria"
+                    hasError={!!categoryError}
+                    maxVisibleOptions={3}
+                  />
                   {categoryError && (
                     <FieldError>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1166,13 +1022,18 @@ export default function Clientes() {
 
                 <FormGroup>
                   <Label>Status</Label>
-                  <Select 
+                  <FormDropdown
+                    options={[
+                      { value: 'active', label: 'Ativo' },
+                      { value: 'inactive', label: 'Inativo' },
+                      ...(isAdmin ? [{ value: 'vip', label: 'VIP' }] : [])
+                    ]}
                     value={newClient.status}
-                    onChange={(e) => setNewClient({ ...newClient, status: e.target.value as 'active' | 'inactive' })}
-                  >
-                    <option value="active">Ativo</option>
-                    <option value="inactive">Inativo</option>
-                  </Select>
+                    onChange={(v) => setNewClient({ ...newClient, status: v as 'active' | 'inactive' | 'vip' })}
+                    placeholder="Status"
+                    maxVisibleOptions={2}
+                    hidePlaceholderOption
+                  />
                 </FormGroup>
               </ModalBody>
 

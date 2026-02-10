@@ -67,7 +67,11 @@ export const RightPanel = styled.div`
   }
 
   @media (max-width: 576px) {
-    padding: 50px 25px;
+    padding: 40px 20px;
+  }
+
+  @media (max-width: 400px) {
+    padding: 24px 16px;
   }
 `;
 
@@ -77,6 +81,11 @@ export const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: -5rem;
+  padding: 0 8px;
+
+  @media (max-width: 400px) {
+    margin-top: -3rem;
+  }
 `;
 
 export const LogoWrapper = styled.div`
@@ -92,8 +101,16 @@ export const LogoImg = styled.img`
   max-width: 100%;
   object-fit: contain;
 
+  @media (max-width: 768px) {
+    width: 260px;
+  }
+
   @media (max-width: 576px) {
     width: 220px;
+  }
+
+  @media (max-width: 400px) {
+    width: 180px;
   }
 `;
 

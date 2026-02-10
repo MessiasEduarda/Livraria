@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from '@/components/navbar';
+import EditablePageTitle from '@/components/EditablePageTitle';
+import { useConfig } from '@/context/ConfigContext';
+import { listarVendas, listarCategorias, type VendaDTO, type ItemVendaDTO, type CategoriaDTO } from '@/services/api';
 import { 
   Container, 
   Header,
@@ -52,148 +55,62 @@ import {
   ViewButton
 } from './styles';
 
-interface SaleItem {
-  bookTitle: string;
-  quantity: number;
-  price: number;
+function saleStatus(s?: string): 'completed' | 'pending' | 'cancelled' {
+  const lower = (s || '').toLowerCase();
+  if (lower === 'pending') return 'pending';
+  if (lower === 'cancelled' || lower === 'canceled') return 'cancelled';
+  return 'completed';
 }
 
-interface Sale {
-  id: number;
-  date: string;
-  items: SaleItem[];
-  total: number;
-  status: 'completed' | 'pending' | 'cancelled';
-  customer: string;
-  category: string;
+function itemTitle(item: ItemVendaDTO): string {
+  return item.bookTitle ?? item.titulo ?? '';
 }
-
-const salesData: Sale[] = [
-  {
-    id: 1001,
-    date: '2026-02-04T14:30:00',
-    customer: 'João Silva',
-    category: 'Ficção',
-    items: [
-      { bookTitle: '1984', quantity: 2, price: 45.90 },
-      { bookTitle: 'O Hobbit', quantity: 1, price: 52.90 }
-    ],
-    total: 144.70,
-    status: 'completed'
-  },
-  {
-    id: 1002,
-    date: '2026-02-04T10:15:00',
-    customer: 'Maria Santos',
-    category: 'Tecnologia',
-    items: [
-      { bookTitle: 'Clean Code', quantity: 1, price: 89.90 }
-    ],
-    total: 89.90,
-    status: 'completed'
-  },
-  {
-    id: 1003,
-    date: '2026-02-03T16:45:00',
-    customer: 'Pedro Costa',
-    category: 'História',
-    items: [
-      { bookTitle: 'Sapiens', quantity: 3, price: 64.90 }
-    ],
-    total: 194.70,
-    status: 'completed'
-  },
-  {
-    id: 1004,
-    date: '2026-02-03T11:20:00',
-    customer: 'Ana Oliveira',
-    category: 'Fantasia',
-    items: [
-      { bookTitle: 'Harry Potter', quantity: 2, price: 58.90 },
-      { bookTitle: 'O Hobbit', quantity: 1, price: 52.90 }
-    ],
-    total: 170.70,
-    status: 'pending'
-  },
-  {
-    id: 1005,
-    date: '2026-02-02T15:00:00',
-    customer: 'Carlos Mendes',
-    category: 'Tecnologia',
-    items: [
-      { bookTitle: 'Algoritmos', quantity: 1, price: 125.90 },
-      { bookTitle: 'Clean Code', quantity: 1, price: 89.90 }
-    ],
-    total: 215.80,
-    status: 'completed'
-  },
-  {
-    id: 1006,
-    date: '2026-02-02T09:30:00',
-    customer: 'Juliana Rocha',
-    category: 'Autoajuda',
-    items: [
-      { bookTitle: 'O Poder do Hábito', quantity: 2, price: 42.90 }
-    ],
-    total: 85.80,
-    status: 'completed'
-  },
-  {
-    id: 1007,
-    date: '2026-02-01T14:10:00',
-    customer: 'Roberto Lima',
-    category: 'Filosofia',
-    items: [
-      { bookTitle: 'A Arte da Guerra', quantity: 3, price: 35.90 }
-    ],
-    total: 107.70,
-    status: 'completed'
-  },
-  {
-    id: 1008,
-    date: '2026-02-01T10:50:00',
-    customer: 'Fernanda Alves',
-    category: 'Ficção',
-    items: [
-      { bookTitle: '1984', quantity: 1, price: 45.90 }
-    ],
-    total: 45.90,
-    status: 'cancelled'
-  },
-  {
-    id: 1009,
-    date: '2026-01-31T16:20:00',
-    customer: 'Lucas Martins',
-    category: 'Fantasia',
-    items: [
-      { bookTitle: 'Harry Potter', quantity: 5, price: 58.90 }
-    ],
-    total: 294.50,
-    status: 'completed'
-  },
-  {
-    id: 1010,
-    date: '2026-01-31T13:40:00',
-    customer: 'Beatriz Souza',
-    category: 'História',
-    items: [
-      { bookTitle: 'Sapiens', quantity: 2, price: 64.90 }
-    ],
-    total: 129.80,
-    status: 'completed'
-  }
-];
-
-const categories = ['Todas', 'Ficção', 'Tecnologia', 'Fantasia', 'História', 'Autoajuda', 'Filosofia'];
+function itemQty(item: ItemVendaDTO): number {
+  return item.quantidade ?? 0;
+}
+function itemPrice(item: ItemVendaDTO): number {
+  return Number(item.price ?? item.precoUnitario ?? 0);
+}
 
 export default function Vendas() {
-  const [sales, setSales] = useState<Sale[]>(salesData);
+  const { config } = useConfig();
+  const [sales, setSales] = useState<VendaDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<CategoriaDTO[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todas');
+
+  useEffect(() => {
+    listarCategorias().then(setCategories).catch(() => setCategories([]));
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [quickFilter, setQuickFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
+
+  const carregar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dataInicio = startDate ? `${startDate}T00:00:00` : undefined;
+      const dataFim = endDate ? `${endDate}T23:59:59` : undefined;
+      const res = await listarVendas({
+        dataInicio,
+        dataFim,
+        categoria: selectedCategory !== 'Todas' ? selectedCategory : undefined,
+        page: 0,
+        size: 500,
+      });
+      setSales(res.content || []);
+    } catch {
+      setSales([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [startDate, endDate, selectedCategory]);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
 
   // Função para formatar números com separador de milhar
   const formatNumber = (value: number): string => {
@@ -203,41 +120,19 @@ export default function Vendas() {
     });
   };
 
-  // Função para calcular estatísticas
-  const calculateStats = () => {
-    const filteredSales = getFilteredSales();
-    const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
-    const completedSales = filteredSales.filter(s => s.status === 'completed').length;
-    const averageTicket = completedSales > 0 ? totalRevenue / completedSales : 0;
-    const totalItems = filteredSales.reduce((sum, sale) => 
-      sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
-    );
-
-    return { totalRevenue, completedSales, averageTicket, totalItems };
-  };
-
-  // Função de filtro avançada
-  const getFilteredSales = () => {
+  const getFilteredSales = (): VendaDTO[] => {
     return sales.filter(sale => {
-      // Filtro de busca
-      const matchesSearch = searchTerm === '' || 
-        sale.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = !searchTerm.trim() ||
+        (sale.customer || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         sale.id.toString().includes(searchTerm) ||
-        sale.items.some(item => item.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      // Filtro de categoria
-      const matchesCategory = selectedCategory === 'Todas' || sale.category === selectedCategory;
-
-      // Filtro de data
+        (sale.items || []).some(item => itemTitle(item).toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCategory = selectedCategory === 'Todas' || (sale.category || '') === selectedCategory;
       const saleDate = new Date(sale.date);
       const matchesStartDate = !startDate || saleDate >= new Date(startDate);
       const matchesEndDate = !endDate || saleDate <= new Date(endDate + 'T23:59:59');
-
-      // Filtro rápido
       let matchesQuickFilter = true;
       if (quickFilter === 'today') {
-        const today = new Date().toDateString();
-        matchesQuickFilter = new Date(sale.date).toDateString() === today;
+        matchesQuickFilter = new Date(sale.date).toDateString() === new Date().toDateString();
       } else if (quickFilter === 'week') {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
@@ -247,13 +142,18 @@ export default function Vendas() {
         monthAgo.setMonth(monthAgo.getMonth() - 1);
         matchesQuickFilter = new Date(sale.date) >= monthAgo;
       }
-
       return matchesSearch && matchesCategory && matchesStartDate && matchesEndDate && matchesQuickFilter;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
   const filteredSales = getFilteredSales();
-  const stats = calculateStats();
+  const totalRevenue = filteredSales.reduce((sum, s) => sum + Number(s.total), 0);
+  const completedSales = filteredSales.filter(s => saleStatus(s.status) === 'completed').length;
+  const averageTicket = completedSales > 0 ? totalRevenue / completedSales : 0;
+  const totalItems = filteredSales.reduce((sum, s) =>
+    sum + (s.items || []).reduce((itemSum, item) => itemSum + itemQty(item), 0), 0
+  );
+  const stats = { totalRevenue, completedSales, averageTicket, totalItems };
 
   // Função para formatar data
   const formatDate = (dateString: string) => {
@@ -269,7 +169,7 @@ export default function Vendas() {
 
   // Função para agrupar vendas por data (timeline)
   const groupSalesByDate = () => {
-    const groups: { [key: string]: Sale[] } = {};
+    const groups: { [key: string]: VendaDTO[] } = {};
     
     filteredSales.forEach(sale => {
       const date = new Date(sale.date).toLocaleDateString('pt-BR', {
@@ -303,7 +203,13 @@ export default function Vendas() {
             startDate: startDate,
             endDate: endDate,
             quickFilter: quickFilter
-          }
+          },
+          storeConfig: {
+            storeName: config.storeName,
+            storeEmail: config.storeEmail,
+            storePhone: config.storePhone,
+            storeAddress: config.storeAddress,
+          },
         }),
       });
 
@@ -338,7 +244,9 @@ export default function Vendas() {
     <Navbar>
       <Container>
         <Header>
-          <Title>Histórico de Vendas</Title>
+          <EditablePageTitle pageKey="vendas" defaultTitle="Vendas">
+            {(title) => <Title>{title}</Title>}
+          </EditablePageTitle>
           <ViewToggle>
             <ViewButton 
               $active={viewMode === 'grid'} 
@@ -394,7 +302,7 @@ export default function Vendas() {
             <StatContent>
               <StatLabel>Vendas Concluídas</StatLabel>
               <StatValue>{stats.completedSales}</StatValue>
-              <StatTrend $positive={true}>+8 vendas hoje</StatTrend>
+              <StatTrend $positive={true}>Concluídas</StatTrend>
             </StatContent>
           </StatCard>
 
@@ -476,13 +384,20 @@ export default function Vendas() {
           <FilterGroup>
             <FilterLabel>Categoria</FilterLabel>
             <CategoryFilter>
-              {categories.map(category => (
-                <CategoryOption
-                  key={category}
-                  $active={selectedCategory === category}
-                  onClick={() => setSelectedCategory(category)}
+              <CategoryOption
+                  key="todas"
+                  $active={selectedCategory === 'Todas'}
+                  onClick={() => setSelectedCategory('Todas')}
                 >
-                  {category}
+                  Todas
+                </CategoryOption>
+              {categories.map(cat => (
+                <CategoryOption
+                  key={cat.id}
+                  $active={selectedCategory === cat.nome}
+                  onClick={() => setSelectedCategory(cat.nome)}
+                >
+                  {cat.nome}
                 </CategoryOption>
               ))}
             </CategoryFilter>
@@ -524,7 +439,11 @@ export default function Vendas() {
           </ActionButtons>
         </FilterSection>
 
-        {filteredSales.length > 0 ? (
+        {loading ? (
+          <EmptyState>
+            <p>Carregando vendas...</p>
+          </EmptyState>
+        ) : filteredSales.length > 0 ? (
           viewMode === 'grid' ? (
             <SalesGrid>
               {filteredSales.map(sale => (
@@ -542,10 +461,10 @@ export default function Vendas() {
                     {sale.items.map((item, index) => (
                       <SaleItem key={index}>
                         <ItemInfo>
-                          <ItemName>{item.bookTitle}</ItemName>
-                          <ItemQuantity>Qtd: {item.quantity}</ItemQuantity>
+                          <ItemName>{itemTitle(item)}</ItemName>
+                          <ItemQuantity>Qtd: {itemQty(item)}</ItemQuantity>
                         </ItemInfo>
-                        <ItemPrice>R$ {formatNumber(item.price * item.quantity)}</ItemPrice>
+                        <ItemPrice>R$ {formatNumber(itemPrice(item) * itemQty(item))}</ItemPrice>
                       </SaleItem>
                     ))}
                   </SaleItems>
@@ -555,9 +474,9 @@ export default function Vendas() {
                       <TotalLabel>Total</TotalLabel>
                       <TotalValue>R$ {formatNumber(sale.total)}</TotalValue>
                     </div>
-                    <SaleStatus $status={sale.status}>
-                      {sale.status === 'completed' ? 'Concluída' : 
-                       sale.status === 'pending' ? 'Pendente' : 'Cancelada'}
+                    <SaleStatus $status={saleStatus(sale.status)}>
+                      {saleStatus(sale.status) === 'completed' ? 'Concluída' :
+                       saleStatus(sale.status) === 'pending' ? 'Pendente' : 'Cancelada'}
                     </SaleStatus>
                   </SaleFooter>
                 </SaleCard>
@@ -584,10 +503,10 @@ export default function Vendas() {
                           {sale.items.map((item, index) => (
                             <SaleItem key={index}>
                               <ItemInfo>
-                                <ItemName>{item.bookTitle}</ItemName>
-                                <ItemQuantity>Qtd: {item.quantity}</ItemQuantity>
+                                <ItemName>{itemTitle(item)}</ItemName>
+                                <ItemQuantity>Qtd: {itemQty(item)}</ItemQuantity>
                               </ItemInfo>
-                              <ItemPrice>R$ {formatNumber(item.price * item.quantity)}</ItemPrice>
+                              <ItemPrice>R$ {formatNumber(itemPrice(item) * itemQty(item))}</ItemPrice>
                             </SaleItem>
                           ))}
                         </SaleItems>
@@ -597,9 +516,9 @@ export default function Vendas() {
                             <TotalLabel>Total</TotalLabel>
                             <TotalValue>R$ {formatNumber(sale.total)}</TotalValue>
                           </div>
-                          <SaleStatus $status={sale.status}>
-                            {sale.status === 'completed' ? 'Concluída' : 
-                             sale.status === 'pending' ? 'Pendente' : 'Cancelada'}
+                          <SaleStatus $status={saleStatus(sale.status)}>
+                            {saleStatus(sale.status) === 'completed' ? 'Concluída' :
+                             saleStatus(sale.status) === 'pending' ? 'Pendente' : 'Cancelada'}
                           </SaleStatus>
                         </SaleFooter>
                       </SaleCard>

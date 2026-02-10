@@ -6,6 +6,9 @@ import Navbar from '@/components/navbar';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
+import { buscarCliente, atualizarCliente, type ClienteDTO } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
+import FormDropdown from '@/components/FormDropdown';
 import {
   PageContainer,
   ClientesBackground,
@@ -47,7 +50,6 @@ import {
   FormGroup,
   Label,
   Input,
-  Select,
   ModalFooter,
   CancelButton,
   SubmitButton,
@@ -55,61 +57,75 @@ import {
   BackButton
 } from './styles';
 
-interface Cliente {
-  id: number;
-  nome: string;
-  email: string;
-  telefone: string;
-  cpf: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-  dataCadastro: string;
-  status: 'ativo' | 'inativo';
-  avatar: string;
-}
-
-const clientesData: Cliente[] = [
-  { id: 1, nome: "Ana Silva", email: "ana@email.com", telefone: "(11) 98765-4321", cpf: "123.456.789-00", endereco: "Rua das Flores, 123", cidade: "São Paulo", estado: "SP", cep: "01234-567", dataCadastro: "15/01/2024", status: "ativo", avatar: "https://ui-avatars.com/api/?name=Ana+Silva&background=0b4200&color=fff&size=200" },
-  { id: 2, nome: "Carlos Santos", email: "carlos@email.com", telefone: "(11) 91234-5678", cpf: "234.567.890-11", endereco: "Av. Paulista, 456", cidade: "São Paulo", estado: "SP", cep: "01310-100", dataCadastro: "20/01/2024", status: "ativo", avatar: "https://ui-avatars.com/api/?name=Carlos+Santos&background=0b4200&color=fff&size=200" },
-  { id: 3, nome: "Maria Oliveira", email: "maria@email.com", telefone: "(21) 99876-5432", cpf: "345.678.901-22", endereco: "Rua do Catete, 789", cidade: "Rio de Janeiro", estado: "RJ", cep: "22220-000", dataCadastro: "25/01/2024", status: "inativo", avatar: "https://ui-avatars.com/api/?name=Maria+Oliveira&background=0b4200&color=fff&size=200" },
-  { id: 4, nome: "João Pereira", email: "joao@email.com", telefone: "(31) 98888-7777", cpf: "456.789.012-33", endereco: "Av. Afonso Pena, 321", cidade: "Belo Horizonte", estado: "MG", cep: "30130-001", dataCadastro: "01/02/2024", status: "ativo", avatar: "https://ui-avatars.com/api/?name=Joao+Pereira&background=0b4200&color=fff&size=200" },
-  { id: 5, nome: "Fernanda Costa", email: "fernanda@email.com", telefone: "(41) 97777-6666", cpf: "567.890.123-44", endereco: "Rua XV de Novembro, 654", cidade: "Curitiba", estado: "PR", cep: "80020-310", dataCadastro: "05/02/2024", status: "ativo", avatar: "https://ui-avatars.com/api/?name=Fernanda+Costa&background=0b4200&color=fff&size=200" },
-];
-
 const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+
+function mapStatus(s?: string): 'ativo' | 'inativo' | 'vip' {
+  if (!s) return 'ativo';
+  const lower = s.toLowerCase();
+  if (lower === 'vip') return 'vip';
+  return lower === 'inativo' || lower === 'inactive' ? 'inativo' : 'ativo';
+}
 
 export default function EditarClienteComponent() {
   const params = useParams();
   const router = useRouter();
-  const clienteId = parseInt(params.id as string);
-  
-  const cliente = clientesData.find(c => c.id === clienteId);
+  const clienteId = parseInt(params.id as string, 10);
+  const [cliente, setCliente] = useState<ClienteDTO | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
-    nome: cliente?.nome || '',
-    email: cliente?.email || '',
-    telefone: cliente?.telefone || '',
-    cpf: cliente?.cpf || '',
-    endereco: cliente?.endereco || '',
-    cidade: cliente?.cidade || '',
-    estado: cliente?.estado || '',
-    cep: cliente?.cep || '',
-    status: cliente?.status || 'ativo'
+    nome: '',
+    email: '',
+    telefone: '',
+    cpf: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    status: 'ativo' as 'ativo' | 'inativo' | 'vip'
   });
 
   const [originalData, setOriginalData] = useState({
-    nome: cliente?.nome || '',
-    email: cliente?.email || '',
-    telefone: cliente?.telefone || '',
-    cpf: cliente?.cpf || '',
-    endereco: cliente?.endereco || '',
-    cidade: cliente?.cidade || '',
-    estado: cliente?.estado || '',
-    cep: cliente?.cep || '',
-    status: cliente?.status || 'ativo'
+    nome: '',
+    email: '',
+    telefone: '',
+    cpf: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    status: 'ativo' as 'ativo' | 'inativo' | 'vip'
   });
+
+  const { user } = useAuth();
+  const isAdmin = user?.admin === true;
+
+  useEffect(() => {
+    if (!clienteId || isNaN(clienteId)) {
+      setLoading(false);
+      return;
+    }
+    buscarCliente(clienteId)
+      .then((c) => {
+        setCliente(c);
+        const status = mapStatus(c.status);
+        const data = {
+          nome: c.nome || '',
+          email: c.email || '',
+          telefone: c.telefone || '',
+          cpf: c.cpf || '',
+          endereco: c.endereco || '',
+          cidade: c.cidade || '',
+          estado: c.estado || '',
+          cep: c.cep || '',
+          status
+        };
+        setFormData(data);
+        setOriginalData(data);
+      })
+      .catch(() => setCliente(null))
+      .finally(() => setLoading(false));
+  }, [clienteId]);
 
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -184,14 +200,25 @@ export default function EditarClienteComponent() {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmModal(false);
-    
-    // Simular salvamento
-    setTimeout(() => {
-      console.log('Cliente atualizado:', formData);
+    if (!clienteId || !cliente) return;
+    try {
+      await atualizarCliente(clienteId, {
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        cpf: formData.cpf,
+        endereco: formData.endereco || undefined,
+        cidade: formData.cidade || undefined,
+        estado: formData.estado || undefined,
+        cep: formData.cep || undefined,
+        status: formData.status === 'vip' ? 'VIP' : formData.status === 'inativo' ? 'INACTIVE' : 'ACTIVE'
+      });
       setShowSuccessModal(true);
-    }, 500);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao salvar cliente.');
+    }
   };
 
   const handleSuccessClose = () => {
@@ -202,6 +229,20 @@ export default function EditarClienteComponent() {
   const handleClose = () => {
     handleCancelClick();
   };
+
+  if (loading) {
+    return (
+      <Navbar>
+        <PageContainer>
+          <ClientesBackground>
+            <ClientesContent>
+              <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Carregando cliente...</p>
+            </ClientesContent>
+          </ClientesBackground>
+        </PageContainer>
+      </Navbar>
+    );
+  }
 
   if (!cliente) {
     return (
@@ -217,10 +258,6 @@ export default function EditarClienteComponent() {
       </Navbar>
     );
   }
-
-  const totalClientes = clientesData.length;
-  const clientesAtivos = clientesData.filter(c => c.status === 'ativo').length;
-  const clientesInativos = clientesData.filter(c => c.status === 'inativo').length;
 
   return (
     <Navbar>
@@ -255,102 +292,11 @@ export default function EditarClienteComponent() {
                   </svg>
                 </StatIcon>
                 <StatInfo>
-                  <StatLabel>Total de Clientes</StatLabel>
-                  <StatValue>{totalClientes}</StatValue>
-                </StatInfo>
-              </StatCard>
-
-              <StatCard>
-                <StatIcon $color="#28a745">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                </StatIcon>
-                <StatInfo>
-                  <StatLabel>Clientes Ativos</StatLabel>
-                  <StatValue>{clientesAtivos}</StatValue>
-                </StatInfo>
-              </StatCard>
-
-              <StatCard>
-                <StatIcon $color="#dc3545">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                  </svg>
-                </StatIcon>
-                <StatInfo>
-                  <StatLabel>Clientes Inativos</StatLabel>
-                  <StatValue>{clientesInativos}</StatValue>
+                  <StatLabel>Editando</StatLabel>
+                  <StatValue>{cliente.nome}</StatValue>
                 </StatInfo>
               </StatCard>
             </StatsCards>
-
-            <FilterSection>
-              <FilterGroup>
-                <FilterDropdown>
-                  <FilterButton disabled>
-                    <span>Status</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9l6 6 6-6"/>
-                    </svg>
-                  </FilterButton>
-                </FilterDropdown>
-              </FilterGroup>
-            </FilterSection>
-
-            <ClientesTable>
-              <TableHeader>
-                <TableRow $isHeader>
-                  <TableHeaderCell $width="35%">Cliente</TableHeaderCell>
-                  <TableHeaderCell $width="25%">Telefone</TableHeaderCell>
-                  <TableHeaderCell $width="20%">Cidade</TableHeaderCell>
-                  <TableHeaderCell $width="15%">Status</TableHeaderCell>
-                  <TableHeaderCell $width="5%">Ações</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <tbody>
-                {clientesData.slice(0, 6).map(c => (
-                  <TableRow key={c.id}>
-                    <TableCell>
-                      <TableClienteDetails>
-                        <TableClienteAvatar src={c.avatar} alt={c.nome} />
-                        <div>
-                          <TableClienteName>{c.nome}</TableClienteName>
-                          <TableClienteEmail>{c.email}</TableClienteEmail>
-                        </div>
-                      </TableClienteDetails>
-                    </TableCell>
-                    <TableCell>{c.telefone}</TableCell>
-                    <TableCell>{c.cidade}/{c.estado}</TableCell>
-                    <TableCell>
-                      <TableStatusBadge $status={c.status}>
-                        {c.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </TableStatusBadge>
-                    </TableCell>
-                    <TableCell>
-                      <ActionButtons>
-                        <ActionButton title="Editar">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </ActionButton>
-                        <ActionButton title="Detalhes">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                          </svg>
-                        </ActionButton>
-                      </ActionButtons>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </tbody>
-            </ClientesTable>
           </ClientesContent>
         </ClientesBackground>
 
@@ -435,15 +381,13 @@ export default function EditarClienteComponent() {
 
                 <FormGroup>
                   <Label>Estado</Label>
-                  <Select 
+                  <FormDropdown
+                    options={estados.map(uf => ({ value: uf, label: uf }))}
                     value={formData.estado}
-                    onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                  >
-                    <option value="">UF</option>
-                    {estados.map(uf => (
-                      <option key={uf} value={uf}>{uf}</option>
-                    ))}
-                  </Select>
+                    onChange={(v) => setFormData({ ...formData, estado: v })}
+                    placeholder="UF"
+                    maxVisibleOptions={5}
+                  />
                 </FormGroup>
 
                 <FormGroup>
@@ -460,13 +404,18 @@ export default function EditarClienteComponent() {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select 
+                <FormDropdown
+                  options={[
+                    { value: 'ativo', label: 'Ativo' },
+                    { value: 'inativo', label: 'Inativo' },
+                    ...(isAdmin ? [{ value: 'vip', label: 'VIP' }] : [])
+                  ]}
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ativo' | 'inativo' })}
-                >
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                </Select>
+                  onChange={(v) => setFormData({ ...formData, status: v as 'ativo' | 'inativo' | 'vip' })}
+                  placeholder="Status"
+                  maxVisibleOptions={3}
+                  hidePlaceholderOption
+                />
               </FormGroup>
             </ModalBody>
 

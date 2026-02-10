@@ -14,10 +14,30 @@ const fadeInDown = keyframes`
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
+  }
 `;
 
 export const Header = styled.div`
@@ -29,8 +49,15 @@ export const Header = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
+    margin-bottom: 24px;
+    gap: 16px;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+    gap: 12px;
   }
 `;
 
@@ -40,6 +67,14 @@ export const Title = styled.h1`
   color: #3CAD8C;
   margin: 0;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const SearchBar = styled.div`
@@ -169,6 +204,28 @@ export const FilterOption = styled.div<{ $active?: boolean }>`
   }
 `;
 
+export const EsgotadosFilterButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border: 1px solid ${props => props.$active ? '#3CAD8C' : '#ddd'};
+  border-radius: 50px;
+  background-color: ${props => props.$active ? '#e8f5f3' : 'white'};
+  color: ${props => props.$active ? '#2a8569' : '#333'};
+  font-size: 0.95rem;
+  font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #3CAD8C;
+    background-color: #e8f5f3;
+    color: #2a8569;
+  }
+`;
+
 export const ClearFilter = styled.button`
   padding: 10px 24px;
   border: 1px solid #dc3545;
@@ -224,6 +281,22 @@ export const BooksGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 24px;
   margin-top: 24px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 `;
 
 export const BookCard = styled.div`
@@ -246,6 +319,17 @@ export const BookCover = styled.img`
   height: 180px;
   object-fit: cover;
   background-color: #e0e0e0;
+`;
+
+export const BookCoverPlaceholder = styled.div`
+  width: 100%;
+  height: 180px;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.9rem;
 `;
 
 export const BookInfo = styled.div`
@@ -463,10 +547,16 @@ export const ModalClose = styled.button`
 
 export const ModalBody = styled.div`
   padding: 28px;
+  min-height: 540px;
 `;
 
 export const FormGroup = styled.div`
   margin-bottom: 20px;
+`;
+
+/** Container para o dropdown Categoria no Adicionar livro – largura reduzida */
+export const CategoryDropdownWrap = styled.div`
+  max-width: 220px;
 `;
 
 export const Label = styled.label`

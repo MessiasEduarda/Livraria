@@ -4,10 +4,30 @@ import styled from 'styled-components';
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
+  }
 `;
 
 export const Header = styled.div`
@@ -15,11 +35,17 @@ export const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
 
   @media (max-width: 768px) {
+    margin-bottom: 24px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
   }
 `;
 
@@ -29,6 +55,14 @@ export const Title = styled.h1`
   color: #3CAD8C;
   margin: 0;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const ViewToggle = styled.div`
@@ -69,13 +103,21 @@ export const StatsGrid = styled.div`
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 32px;
+  min-width: 0;
 
-  @media (max-width: 1400px) {
+  @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 12px;
+    margin-bottom: 20px;
   }
 `;
 
@@ -87,6 +129,7 @@ export const StatCard = styled.div`
   display: flex;
   gap: 14px;
   transition: all 0.3s ease;
+  min-width: 0;
 
   &:hover {
     transform: translateY(-4px);
@@ -344,8 +387,18 @@ export const RefreshButton = styled.button`
 
 export const SalesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
   gap: 24px;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 12px;
+  }
 `;
 
 export const SaleCard = styled.div`
@@ -355,6 +408,7 @@ export const SaleCard = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border-left: 4px solid #3CAD8C;
+  min-width: 0;
 
   &:hover {
     transform: translateY(-4px);
@@ -537,9 +591,10 @@ export const TimelineDate = styled.div`
 
 export const TimelineCards = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
   gap: 24px;
   margin-left: 32px;
   padding-left: 24px;
   border-left: 2px dashed #ddd;
+  min-width: 0;
 `;

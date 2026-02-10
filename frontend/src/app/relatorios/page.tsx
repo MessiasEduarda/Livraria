@@ -1,5 +1,12 @@
-import Relatorios from '@/components/relatorios'
+'use client';
+
+import AdminGuard from '@/components/AdminGuard';
+import Relatorios from '@/components/relatorios';
 
 export default function RelatoriosPage() {
-  return <Relatorios />
+  return (
+    <AdminGuard>
+      <Relatorios />
+    </AdminGuard>
+  );
 }

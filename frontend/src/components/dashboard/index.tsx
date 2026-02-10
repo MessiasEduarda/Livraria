@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import { getDashboard, type DashboardDTO } from '@/services/api';
 import { 
   Container,
   Header,
@@ -71,165 +72,33 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-// Dados de vendas dos últimos 7 dias
-const salesData = [
-  { date: '29/01', vendas: 3850, pedidos: 12 },
-  { date: '30/01', vendas: 4420, pedidos: 15 },
-  { date: '31/01', vendas: 5240, pedidos: 18 },
-  { date: '01/02', vendas: 3920, pedidos: 14 },
-  { date: '02/02', vendas: 4680, pedidos: 16 },
-  { date: '03/02', vendas: 5890, pedidos: 21 },
-  { date: '04/02', vendas: 6320, pedidos: 23 }
-];
-
-// Distribuição de vendas por categoria
-const categoryData = [
-  { name: 'Ficção', value: 3845, percentage: 28 },
-  { name: 'Tecnologia', value: 3280, percentage: 24 },
-  { name: 'Fantasia', value: 2465, percentage: 18 },
-  { name: 'História', value: 1920, percentage: 14 },
-  { name: 'Autoajuda', value: 1370, percentage: 10 },
-  { name: 'Filosofia', value: 820, percentage: 6 }
-];
-
 const COLORS = ['#2a8569', '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#059669'];
 
-// Top 5 produtos mais vendidos
-const topProducts = [
-  { 
-    rank: 1, 
-    name: '1984', 
-    author: 'George Orwell',
-    category: 'Ficção', 
-    sales: 45, 
-    revenue: 2065.50 
-  },
-  { 
-    rank: 2, 
-    name: 'Clean Code', 
-    author: 'Robert Martin',
-    category: 'Tecnologia', 
-    sales: 38, 
-    revenue: 3416.20 
-  },
-  { 
-    rank: 3, 
-    name: 'Sapiens', 
-    author: 'Yuval Harari',
-    category: 'História', 
-    sales: 36, 
-    revenue: 2336.40 
-  },
-  { 
-    rank: 4, 
-    name: 'Harry Potter e a Pedra Filosofal', 
-    author: 'J.K. Rowling',
-    category: 'Fantasia', 
-    sales: 34, 
-    revenue: 2002.60 
-  },
-  { 
-    rank: 5, 
-    name: 'O Poder do Hábito', 
-    author: 'Charles Duhigg',
-    category: 'Autoajuda', 
-    sales: 28, 
-    revenue: 1201.20 
-  }
-];
-
-// Atividades recentes
-const recentActivities = [
-  {
-    type: 'sale',
-    text: 'Nova venda realizada - Pedido #1010',
-    time: 'Há 5 minutos',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="9" cy="21" r="1"/>
-        <circle cx="20" cy="21" r="1"/>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-      </svg>
-    )
-  },
-  {
-    type: 'stock',
-    text: 'Estoque baixo - Clean Code (8 unidades)',
-    time: 'Há 23 minutos',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-      </svg>
-    )
-  },
-  {
-    type: 'customer',
-    text: 'Novo cliente cadastrado - Beatriz Souza',
-    time: 'Há 1 hora',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="8.5" cy="7" r="4"/>
-        <line x1="20" y1="8" x2="20" y2="14"/>
-        <line x1="23" y1="11" x2="17" y2="11"/>
-      </svg>
-    )
-  },
-  {
-    type: 'sale',
-    text: 'Venda concluída - R$ 294,50',
-    time: 'Há 2 horas',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="9" cy="21" r="1"/>
-        <circle cx="20" cy="21" r="1"/>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-      </svg>
-    )
-  },
-  {
-    type: 'report',
-    text: 'Relatório mensal gerado com sucesso',
-    time: 'Há 3 horas',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-      </svg>
-    )
-  }
-];
-
-// Alertas importantes
-const alerts = [
-  {
-    type: 'warning',
-    title: 'Estoque Crítico',
-    description: '3 produtos com estoque abaixo de 10 unidades',
-    action: 'Ver Produtos',
-    color: '#dc2626'
-  },
-  {
-    type: 'info',
-    title: 'Meta Mensal',
-    description: 'Você atingiu 78% da meta de vendas do mês',
-    action: 'Ver Progresso',
-    color: '#2563eb'
-  },
-  {
-    type: 'success',
-    title: 'Novos Clientes VIP',
-    description: '2 clientes foram promovidos a VIP esta semana',
-    action: 'Ver Clientes',
-    color: '#059669'
-  }
-];
-
-export default function Dashboard() {
+export default function MetaMensalComponent() {
   const router = useRouter();
-  const [selectedPeriod, setSelectedPeriod] = useState('7dias');
+  const [dashboard, setDashboard] = useState<DashboardDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dias, setDias] = useState(7);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getDashboard(dias, 10).then((data) => {
+      if (!cancelled) {
+        setDashboard(data);
+      }
+    }).catch(() => {
+      if (!cancelled) setDashboard(null);
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [dias]);
+
+  const salesData = (dashboard?.vendasPorDia || []) as { date: string; vendas: number; pedidos: number }[];
+  const categoryData = (dashboard?.vendasPorCategoria || []) as { name: string; value: number; percentage: number }[];
+  const topProducts = (dashboard?.topProdutos || []) as { rank: number; name: string; author: string; category: string; sales: number; revenue: number }[];
+  const estoqueCritico = dashboard?.estoqueCritico || [];
 
   const formatCurrency = (value: number): string => {
     return value.toLocaleString('pt-BR', {
@@ -242,25 +111,31 @@ export default function Dashboard() {
     return value.toLocaleString('pt-BR');
   };
 
-  const handleAlertAction = (alertType: string) => {
-    switch(alertType) {
-        case 'warning':
-            router.push('/dashboard/estoque-critico/1');
-            break;
-        case 'info':
-            router.push('/dashboard/meta-mensal/1');
-            break;
-        case 'success':
-            router.push('/dashboard/cliente-vip/1');
-            break;
-        }
-    };
+  const totalRevenue = Number(dashboard?.receitaTotal ?? 0);
+  const totalOrders = Number(dashboard?.vendasConcluidas ?? 0);
+  const averageTicket = Number(dashboard?.ticketMedio ?? 0);
+  const totalItemsSold = Number(dashboard?.totalItensVendidos ?? 0);
 
-  // Estatísticas principais (dados calculados)
-  const totalRevenue = 34400.00;
-  const totalOrders = 119;
-  const averageTicket = totalRevenue / totalOrders;
-  const totalCustomers = 10;
+  const alerts = estoqueCritico.length > 0
+    ? [{ type: 'warning', title: 'Estoque Crítico', description: `${estoqueCritico.length} produto(s) com estoque baixo`, action: 'Ver Produtos', color: '#dc2626' as const }]
+    : [];
+
+  const handleAlertAction = (alertType: string) => {
+    if (alertType === 'warning') router.push('/estoque');
+  };
+
+  const recentActivities: { type: string; text: string; time: string; icon: React.ReactNode }[] = [];
+
+  if (loading) {
+    return (
+      <Navbar>
+        <Container>
+          <Header><Title>Dashboard</Title></Header>
+          <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Carregando...</p>
+        </Container>
+      </Navbar>
+    );
+  }
 
   return (
     <Navbar>
@@ -268,7 +143,7 @@ export default function Dashboard() {
         <Header>
           <div>
             <Title>Dashboard</Title>
-            <DateRange>Período: Últimos 7 dias</DateRange>
+            <DateRange>Período: Últimos {dias} dias</DateRange>
           </div>
         </Header>
 
@@ -325,9 +200,9 @@ export default function Dashboard() {
               </svg>
             </StatIcon>
             <StatContent>
-              <StatLabel>Clientes Ativos</StatLabel>
-              <StatValue>{totalCustomers}</StatValue>
-              <StatTrend $positive={true}>+20% vs semana anterior</StatTrend>
+              <StatLabel>Itens Vendidos</StatLabel>
+              <StatValue>{formatNumber(totalItemsSold)}</StatValue>
+              <StatTrend $positive={true}>Período</StatTrend>
             </StatContent>
           </StatCard>
         </StatsGrid>

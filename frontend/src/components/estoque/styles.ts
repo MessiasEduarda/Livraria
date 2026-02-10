@@ -3,14 +3,29 @@ import styled from 'styled-components';
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 20px;
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
   }
 `;
 
@@ -83,6 +98,17 @@ export const StatsCards = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   margin-bottom: 32px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
 `;
 
 export const StatCard = styled.div`
@@ -254,8 +280,22 @@ export const ClearFilters = styled.button`
   }
 `;
 
+export const TableWrapper = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    margin: 0 -4px;
+    border-radius: 12px;
+  }
+`;
+
 export const BooksTable = styled.table`
   width: 100%;
+  min-width: 640px;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -314,6 +354,22 @@ export const BookImage = styled.img`
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+`;
+
+export const BookImagePlaceholder = styled.div`
+  width: 60px;
+  height: 85px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.65rem;
+  text-align: center;
+  padding: 4px;
 `;
 
 export const BookTitle = styled.div`

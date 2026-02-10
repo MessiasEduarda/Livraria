@@ -6,6 +6,11 @@ export const PageContainer = styled.div`
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+  }
 `;
 
 export const ClientesBackground = styled.div`
@@ -20,6 +25,21 @@ export const ClientesBackground = styled.div`
 export const ClientesContent = styled.div`
   padding: 40px;
   margin-top: 3rem;
+
+  @media (max-width: 1024px) {
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
+  }
 `;
 
 export const Header = styled.div`

@@ -11,11 +11,19 @@ export const ContentWrapper = styled.div`
   margin-left: 30px;
   width: calc(100% - 280px);
   min-height: 100vh;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 
   @media (max-width: 1024px) {
     margin-left: 0;
     width: 100%;
     padding-top: 60px;
+  }
+
+  @media (max-width: 576px) {
+    padding-top: 56px;
   }
 `;
 
@@ -81,6 +89,12 @@ export const MobileMenuButton = styled.button`
     align-items: center;
     justify-content: center;
   }
+
+  @media (max-width: 576px) {
+    top: 12px;
+    left: 12px;
+    padding: 10px;
+  }
 `;
 
 export const Overlay = styled.div`
@@ -121,19 +135,45 @@ export const LogoImg = styled.img`
   @media (max-width: 768px) {
     width: 220px;
   }
+
+  @media (max-width: 400px) {
+    width: 180px;
+  }
 `;
 
 export const TitleText = styled.h1`
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
   font-size: 28px;
-  
   color: #fff;
   text-align: center;
-  margin: -75px 0 40px 0;
+  margin: -75px 0 8px 0;
   width: 100%;
 
   @media (max-width: 768px) {
     font-size: 22px;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 18px;
+    margin: -60px 0 6px 0;
+  }
+`;
+
+export const GreetingText = styled.p`
+  font-family: var(--font-roboto-regular), 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #95A5A6;
+  text-align: center;
+  margin: 0 0 16px 0;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 12px;
+    margin: 0 0 12px 0;
   }
 `;
 

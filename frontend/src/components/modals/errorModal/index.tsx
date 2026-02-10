@@ -46,7 +46,6 @@ export default function ErrorModal({ isOpen, title, message, onClose }: ErrorMod
         </S.Header>
 
         <S.Content>
-          <S.Subtitle>Verifique seus dados</S.Subtitle>
           <S.Message>{message}</S.Message>
         </S.Content>
 

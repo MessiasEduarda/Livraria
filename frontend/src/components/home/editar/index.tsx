@@ -6,27 +6,15 @@ import Navbar from '@/components/navbar';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
+import ErrorModal from '@/components/modals/errorModal';
+import FormDropdown from '@/components/FormDropdown';
+import { buscarLivro, atualizarLivro, excluirLivro, listarCategorias, type LivroDTO, type CategoriaDTO } from '@/services/api';
 import {
   PageContainer,
   HomeBackground,
   HomeContent,
   HomeHeader,
   HomeTitle,
-  SearchBar,
-  SearchInput,
-  SearchIcon,
-  FilterSection,
-  FilterDropdown,
-  FilterButton,
-  AddButton,
-  BooksGrid,
-  BookCard,
-  BookCover,
-  BookInfo,
-  BookCategory,
-  BookTitle,
-  BookAuthor,
-  BookPrice,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -42,26 +30,18 @@ import {
   ImagePreview,
   ModalFooter,
   CancelButton,
+  DeleteButton,
   SubmitButton,
   TwoColumnGrid
 } from './styles';
 
-const booksData = [
-  { id: 1, title: "1984", author: "George Orwell", price: 45.90, category: "Ficção", cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop", stock: 12 },
-  { id: 2, title: "Clean Code", author: "Robert Martin", price: 89.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop", stock: 8 },
-  { id: 3, title: "O Hobbit", author: "J.R.R. Tolkien", price: 52.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=400&h=600&fit=crop", stock: 15 },
-  { id: 4, title: "Sapiens", author: "Yuval Harari", price: 64.90, category: "História", cover: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=400&h=600&fit=crop", stock: 20 },
-  { id: 5, title: "O Poder do Hábito", author: "Charles Duhigg", price: 42.90, category: "Autoajuda", cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop", stock: 10 },
-  { id: 6, title: "Harry Potter", author: "J.K. Rowling", price: 58.90, category: "Fantasia", cover: "https://images.unsplash.com/photo-1618836850461-81b3a1969e30?w=400&h=600&fit=crop", stock: 25 },
-  { id: 7, title: "A Arte da Guerra", author: "Sun Tzu", price: 35.90, category: "Filosofia", cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop", stock: 18 },
-  { id: 8, title: "Algoritmos", author: "Thomas Cormen", price: 125.90, category: "Tecnologia", cover: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&h=600&fit=crop", stock: 5 },
-];
-
 export default function EditarComponent() {
   const params = useParams();
   const router = useRouter();
-  const bookId = parseInt(params.id as string);
-  
+  const bookId = parseInt(params.id as string, 10);
+
+  const [livro, setLivro] = useState<LivroDTO | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     id: 0,
     title: '',
@@ -71,47 +51,45 @@ export default function EditarComponent() {
     category: '',
     cover: ''
   });
-
-  const [originalData, setOriginalData] = useState({
-    id: 0,
-    title: '',
-    author: '',
-    price: 0,
-    stock: 0,
-    category: '',
-    cover: ''
-  });
-
-  const [loading, setLoading] = useState(true);
+  const [originalData, setOriginalData] = useState(formData);
   const [imagePreview, setImagePreview] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
-
-  // Estados dos modais
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const categories = ["Programação", "JavaScript", "Arquitetura de Software", "Desenvolvimento", "Design", "Ficção", "Tecnologia", "Fantasia", "História", "Autoajuda", "Filosofia"];
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [categories, setCategories] = useState<CategoriaDTO[]>([]);
 
   useEffect(() => {
-    const book = booksData.find(b => b.id === bookId);
-    if (book) {
-      const bookData = {
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        stock: book.stock,
-        category: book.category,
-        cover: book.cover
-      };
-      setFormData(bookData);
-      setOriginalData(bookData);
-      if (book.cover) {
-        setImagePreview(book.cover);
-      }
+    listarCategorias().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    if (!bookId || isNaN(bookId)) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    buscarLivro(bookId)
+      .then((l) => {
+        setLivro(l);
+        const data = {
+          id: l.id,
+          title: l.titulo,
+          author: l.autor,
+          price: l.preco,
+          stock: l.estoque,
+          category: l.categoria,
+          cover: l.imagemCapa || ''
+        };
+        setFormData(data);
+        setOriginalData(data);
+        setImagePreview(l.imagemCapa || '');
+      })
+      .catch(() => setLivro(null))
+      .finally(() => setLoading(false));
   }, [bookId]);
 
   // Verificar se houve alterações
@@ -160,7 +138,8 @@ export default function EditarComponent() {
     e.preventDefault();
     
     if (!formData.title || !formData.author || !formData.category) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
+      setErrorMessage('Por favor, preencha todos os campos obrigatórios!');
+      setShowErrorModal(true);
       return;
     }
 
@@ -169,17 +148,41 @@ export default function EditarComponent() {
 
   const handleConfirmSave = () => {
     setShowConfirmModal(false);
-    
-    // Simular salvamento
-    setTimeout(() => {
-      console.log('Dados salvos:', formData);
-      setShowSuccessModal(true);
-    }, 500);
+    if (!livro) return;
+    atualizarLivro(bookId, {
+      titulo: formData.title,
+      autor: formData.author,
+      preco: formData.price,
+      categoria: formData.category,
+      estoque: formData.stock,
+      imagemCapa: formData.cover || undefined
+    })
+      .then(() => setShowSuccessModal(true))
+      .catch((err) => {
+        setErrorMessage(err?.message || 'Erro ao atualizar livro.');
+        setShowErrorModal(true);
+      });
   };
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     router.push('/home');
+  };
+
+  const handleDeleteClick = () => setShowDeleteModal(true);
+
+  const handleConfirmDelete = () => {
+    setShowDeleteModal(false);
+    if (!livro) return;
+    setIsDeleting(true);
+    excluirLivro(bookId)
+      .then(() => router.push('/home'))
+      .catch((err) => {
+        setIsDeleting(false);
+        setShowDeleteModal(false);
+        setErrorMessage(err?.message || 'Erro ao excluir livro.');
+        setShowErrorModal(true);
+      });
   };
 
   const handleClose = () => {
@@ -190,8 +193,29 @@ export default function EditarComponent() {
     return (
       <Navbar>
         <PageContainer>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-            <p style={{ fontSize: '1.25rem', color: '#666' }}>Carregando...</p>
+          <HomeBackground>
+            <HomeContent>
+              <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Carregando livro...</p>
+            </HomeContent>
+          </HomeBackground>
+        </PageContainer>
+      </Navbar>
+    );
+  }
+
+  if (!livro) {
+    return (
+      <Navbar>
+        <PageContainer>
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <h1 style={{ marginBottom: '1rem' }}>Livro não encontrado</h1>
+            <button
+              type="button"
+              onClick={() => router.push('/home')}
+              style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
+            >
+              Voltar para Home
+            </button>
           </div>
         </PageContainer>
       </Navbar>
@@ -201,62 +225,14 @@ export default function EditarComponent() {
   return (
     <Navbar>
       <PageContainer>
-        {/* Background da Home desfocado */}
         <HomeBackground>
           <HomeContent>
             <HomeHeader>
-              <HomeTitle>Gerenciamento de Livraria</HomeTitle>
-              <SearchBar>
-                <SearchIcon>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                  </svg>
-                </SearchIcon>
-                <SearchInput 
-                  type="text" 
-                  placeholder="Buscar por título ou autor..."
-                  disabled
-                />
-              </SearchBar>
+              <HomeTitle>Editar Livro</HomeTitle>
             </HomeHeader>
-
-            <FilterSection>
-              <FilterDropdown>
-                <FilterButton disabled>
-                  <span>Categoria</span>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </FilterButton>
-              </FilterDropdown>
-
-              <AddButton disabled>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Adicionar Livro
-              </AddButton>
-            </FilterSection>
-
-            <BooksGrid>
-              {booksData.slice(0, 6).map(b => (
-                <BookCard key={b.id}>
-                  <BookCover src={b.cover} alt={b.title} />
-                  <BookInfo>
-                    <BookCategory>{b.category}</BookCategory>
-                    <BookTitle>{b.title}</BookTitle>
-                    <BookAuthor>{b.author}</BookAuthor>
-                    <BookPrice>R$ {b.price.toFixed(2)}</BookPrice>
-                  </BookInfo>
-                </BookCard>
-              ))}
-            </BooksGrid>
           </HomeContent>
         </HomeBackground>
 
-        {/* Modal de Edição */}
         <Modal>
           <ModalOverlay onClick={handleClose} />
           <ModalContent>
@@ -298,17 +274,12 @@ export default function EditarComponent() {
 
                 <FormGroup>
                   <Label>Categoria</Label>
-                  <Select 
-                    name="category"
+                  <FormDropdown
+                    options={categories.map(cat => ({ value: cat.nome, label: cat.nome }))}
                     value={formData.category}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </Select>
+                    onChange={(v) => setFormData(prev => ({ ...prev, category: v }))}
+                    placeholder="Selecione uma categoria"
+                  />
                 </FormGroup>
 
                 <TwoColumnGrid>
@@ -366,12 +337,19 @@ export default function EditarComponent() {
                 </FormGroup>
 
                 <ModalFooter>
-                  <CancelButton type="button" onClick={handleCancelClick}>
-                    Cancelar
-                  </CancelButton>
-                  <SubmitButton type="submit">
-                    Salvar Alterações
-                  </SubmitButton>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                    <DeleteButton type="button" onClick={handleDeleteClick} disabled={isDeleting}>
+                      Excluir livro
+                    </DeleteButton>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <CancelButton type="button" onClick={handleCancelClick}>
+                        Cancelar
+                      </CancelButton>
+                      <SubmitButton type="submit">
+                        Salvar Alterações
+                      </SubmitButton>
+                    </div>
+                  </div>
                 </ModalFooter>
               </form>
             </ModalBody>
@@ -405,6 +383,24 @@ export default function EditarComponent() {
           message="As alterações do livro foram salvas com sucesso no sistema."
           buttonText="Continuar"
           onClose={handleSuccessClose}
+        />
+
+        {/* Modal de Confirmar Exclusão */}
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          title="Excluir livro"
+          message="Tem certeza que deseja excluir este livro? Esta ação não pode ser desfeita."
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+
+        <ErrorModal
+          isOpen={showErrorModal}
+          title="Erro"
+          message={errorMessage}
+          onClose={() => setShowErrorModal(false)}
         />
       </PageContainer>
     </Navbar>

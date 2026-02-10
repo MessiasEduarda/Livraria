@@ -6,6 +6,11 @@ export const PageContainer = styled.div`
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+  }
 `;
 
 export const EstoqueBackground = styled.div`
@@ -20,6 +25,21 @@ export const EstoqueBackground = styled.div`
 export const EstoqueContent = styled.div`
   padding: 40px;
   margin-top: 3rem;
+
+  @media (max-width: 1024px) {
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
+  }
 `;
 
 export const Header = styled.div`
@@ -472,6 +492,29 @@ export const CancelButton = styled.button`
   &:hover {
     background-color: #f5f5f5;
     border-color: #999;
+  }
+`;
+
+export const DeleteButton = styled.button`
+  padding: 10px 16px;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #dc3545;
+  font-size: 0.9rem;
+  font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 

@@ -14,14 +14,29 @@ const fadeInDown = keyframes`
 export const Container = styled.div`
   margin-left: 231px;
   padding: 40px;
-  width: 100%;
+  width: calc(100% - 231px);
+  max-width: calc(100% - 231px);
   min-height: 100vh;
   background-color: #f5f5f5;
   margin-top: 3rem;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+    margin-top: 2rem;
+  }
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 20px;
+    padding: 20px 16px;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    margin-top: 1rem;
   }
 `;
 
@@ -34,8 +49,15 @@ export const Header = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
+    margin-bottom: 24px;
+    gap: 16px;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+    gap: 12px;
   }
 `;
 
@@ -45,6 +67,14 @@ export const Title = styled.h1`
   color: #3CAD8C;
   margin: 0;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const SearchBar = styled.div`
@@ -94,6 +124,17 @@ export const StatsCards = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   margin-bottom: 32px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
 `;
 
 export const StatCard = styled.div`
@@ -322,8 +363,22 @@ export const AddButton = styled.button`
   }
 `;
 
+export const TableWrapper = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
+
+  @media (max-width: 768px) {
+    margin: 0 -4px;
+    border-radius: 12px;
+  }
+`;
+
 export const ClientsTable = styled.table`
   width: 100%;
+  min-width: 700px;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -589,6 +644,7 @@ export const ModalClose = styled.button`
 
 export const ModalBody = styled.div`
   padding: 28px;
+  min-height: 540px;
 `;
 
 export const FormGroup = styled.div`

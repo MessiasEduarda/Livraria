@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
+import { listarClientes, type ClienteDTO } from '@/services/api';
 import {
   PageContainer,
   DashboardBackground,
@@ -78,26 +80,18 @@ interface ClienteVIPComponentProps {
   id?: string;
 }
 
-const clientesVIP: ClienteVIP[] = [
-  {
-    id: 1,
-    nome: "Ana Silva",
-    email: "ana@email.com",
-    avatar: "https://ui-avatars.com/api/?name=Ana+Silva&background=0b4200&color=fff&size=200",
-    totalCompras: 28,
-    valorGasto: 12450.00,
-    dataPromocao: "01/02/2024"
-  },
-  {
-    id: 2,
-    nome: "Carlos Santos",
-    email: "carlos@email.com",
-    avatar: "https://ui-avatars.com/api/?name=Carlos+Santos&background=0b4200&color=fff&size=200",
-    totalCompras: 35,
-    valorGasto: 15890.50,
-    dataPromocao: "03/02/2024"
-  }
-];
+function toClienteVIP(c: ClienteDTO): ClienteVIP {
+  const nome = c.nome || 'Cliente';
+  return {
+    id: c.id,
+    nome,
+    email: c.email || '',
+    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0b4200&color=fff&size=200`,
+    totalCompras: c.quantidadeCompras ?? 0,
+    valorGasto: Number(c.totalGasto) || 0,
+    dataPromocao: c.dataCadastro ? new Date(c.dataCadastro).toLocaleDateString('pt-BR') : '—',
+  };
+}
 
 const recentActivities = [
   {
@@ -119,6 +113,15 @@ const recentActivities = [
 
 export default function ClienteVIPComponent({ id }: ClienteVIPComponentProps) {
   const router = useRouter();
+  const [clientesVIP, setClientesVIP] = useState<ClienteVIP[]>([]);
+  const [loadingVIP, setLoadingVIP] = useState(true);
+
+  useEffect(() => {
+    listarClientes({ status: 'VIP', page: 0, size: 50 })
+      .then(res => setClientesVIP((res.content || []).map(toClienteVIP)))
+      .catch(() => setClientesVIP([]))
+      .finally(() => setLoadingVIP(false));
+  }, []);
 
   const handleClose = () => {
     router.push('/dashboard');
@@ -326,7 +329,12 @@ export default function ClienteVIPComponent({ id }: ClienteVIPComponentProps) {
               </SuccessCard>
 
               <ClientesList>
-                {clientesVIP.map((cliente) => (
+                {loadingVIP ? (
+                  <p style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Carregando clientes VIP...</p>
+                ) : clientesVIP.length === 0 ? (
+                  <p style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Nenhum cliente VIP no momento.</p>
+                ) : (
+                clientesVIP.map((cliente) => (
                   <ClienteItem key={cliente.id}>
                     <ClienteAvatar src={cliente.avatar} alt={cliente.nome} />
                     <ClienteInfo>
@@ -356,7 +364,8 @@ export default function ClienteVIPComponent({ id }: ClienteVIPComponentProps) {
                       </StatItem>
                     </ClienteStats>
                   </ClienteItem>
-                ))}
+                ))
+                )}
               </ClientesList>
             </ModalBody>
 

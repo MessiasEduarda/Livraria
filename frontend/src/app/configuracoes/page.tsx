@@ -1,5 +1,12 @@
-import Configuracoes from '@/components/configuracoes'
+'use client';
+
+import AdminGuard from '@/components/AdminGuard';
+import Configuracoes from '@/components/configuracoes';
 
 export default function ConfiguracoesPage() {
-  return <Configuracoes />
+  return (
+    <AdminGuard>
+      <Configuracoes />
+    </AdminGuard>
+  );
 }

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import StyledComponentsRegistry from "@/libs/registry";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ConfigProvider } from "@/context/ConfigContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -97,7 +98,9 @@ export default function RootLayout({
       >
         <StyledComponentsRegistry>
           <AuthProvider>
-            {children}
+            <ConfigProvider>
+              {children}
+            </ConfigProvider>
           </AuthProvider>
         </StyledComponentsRegistry>
       </body>
