@@ -28,7 +28,15 @@ public class CurrentUserService {
         return getCurrentUser().map(Usuario::getId);
     }
 
+    /** true = pode gerenciar loja (ADMIN ou EMPRESA) */
     public boolean isAdmin() {
+        return getCurrentUser()
+                .map(u -> u.getRoles() != null && (u.getRoles().contains("ADMIN") || u.getRoles().contains("EMPRESA")))
+                .orElse(false);
+    }
+
+    /** true = apenas SUPER_ADMIN (role ADMIN), acesso ao painel do sistema */
+    public boolean isSuperAdmin() {
         return getCurrentUser()
                 .map(u -> u.getRoles() != null && u.getRoles().contains("ADMIN"))
                 .orElse(false);

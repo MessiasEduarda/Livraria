@@ -1,22 +1,13 @@
 import styled, { keyframes } from 'styled-components';
 
 const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 `;
 
 export const Overlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(2px);
   display: flex;
@@ -27,15 +18,13 @@ export const Overlay = styled.div`
 `;
 
 export const ModalContainer = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  background: white;
+  border-radius: 16px;
   width: 90%;
   max-width: 450px;
-  min-height: 240px;
-  background-color: #ffffff;
-  border-radius: 16px;
+  min-height: 200px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -46,69 +35,65 @@ export const ModalContainer = styled.div`
 `;
 
 export const Header = styled.div`
-  background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
   padding: 20px 20px;
+  background: linear-gradient(135deg, #3CAD8C 0%, #2e8f72 100%);
   flex-shrink: 0;
 `;
 
 export const Title = styled.h2`
   font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
-  letter-spacing: -0.3px;
   text-align: left;
+  letter-spacing: -0.02em;
 
   @media (max-width: 576px) {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
   }
 `;
 
 export const Content = styled.div`
-  padding: 32px 20px;
+  padding: 28px 20px;
   background-color: #ffffff;
   flex: 1;
-  display: flex;
-  align-items: flex-start;
 `;
 
-export const ContentWithTitle = styled.div`
-  background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
-  padding: 20px 20px;
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-`;
-
-export const Message = styled.p`
-  font-family: var(--font-inter-variable-regular), 'Inter', sans-serif;
+export const Subtitle = styled.p`
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
   font-size: 0.95rem;
   font-weight: 400;
-  color: #757575;
+  color: #374151;
   margin: 0;
   line-height: 1.6;
   text-align: left;
-  margin-top: -1rem;
 
   @media (max-width: 576px) {
     font-size: 0.9rem;
   }
 `;
 
-export const MessageAsTitle = styled.h2`
-  font-family: var(--font-cabourg-bold), 'Cabourg', serif;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-  letter-spacing: -0.3px;
-  text-align: left;
-  line-height: 1.4;
+export const ContentWithTitle = styled.div`
+  padding: 28px 20px;
+  background-color: #ffffff;
+`;
 
-  @media (max-width: 576px) {
-    font-size: 1.4rem;
-  }
+export const Message = styled.p`
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
+  text-align: left;
+`;
+
+export const MessageAsTitle = styled.p`
+  font-family: var(--font-metropolis-regular), 'Metropolis', sans-serif;
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
 `;
 
 export const Footer = styled.div`
@@ -120,29 +105,24 @@ export const Footer = styled.div`
 `;
 
 export const ConfirmButton = styled.button`
-  flex: 1;
+  width: 100%;
   height: 56px;
   border: none;
-  border-radius: 0;
-  background-color: #ffffff;
-  color: #2e7d32;
+  border-radius: 0 0 16px 16px;
+  background-color: #fff3e0;
+  color: #3CAD8C;
   font-family: var(--font-metropolis-semibold), 'Metropolis', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0;
   cursor: pointer;
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #e8f5e9;
-  }
-
-  &:active {
-    background-color: #c8e6c9;
+    background-color: #f8f9fa;
   }
 
   @media (max-width: 576px) {
-    font-size: 1rem;
     height: 52px;
+    font-size: 0.95rem;
   }
 `;

@@ -123,6 +123,52 @@ CREATE INDEX IF NOT EXISTS idx_itens_venda_venda ON itens_venda(venda_id);
 
 -- ============================================================
 -- ------------------------------------------------------------
+-- 7. Tabela de empresas (Super Admin gerencia)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS empresas (
+    id BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    cnpj VARCHAR(20),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    formas_pagamento VARCHAR(500),
+    data_cadastro DATE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    observacoes VARCHAR(500),
+    permissoes VARCHAR(500)
+);
+
+CREATE INDEX IF NOT EXISTS idx_empresas_ativo ON empresas(ativo);
+
+-- Para quem já tinha a tabela empresas sem a coluna permissoes:
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS permissoes VARCHAR(500);
+
+-- Vincular clientes à empresa (conteúdo por empresa)
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS empresa_id BIGINT REFERENCES empresas(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_clientes_empresa ON clientes(empresa_id);
+
+-- Vincular usuários a empresa (opcional)
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS empresa_id BIGINT REFERENCES empresas(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_usuarios_empresa ON usuarios(empresa_id);
+
+-- ------------------------------------------------------------
+-- 8. Faturas por empresa (Super Admin gera; bloqueia acesso se em atraso)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS faturas (
+    id BIGSERIAL PRIMARY KEY,
+    empresa_id BIGINT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    valor NUMERIC(12, 2) NOT NULL,
+    data_vencimento DATE NOT NULL,
+    pago BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    observacoes VARCHAR(500)
+);
+CREATE INDEX IF NOT EXISTS idx_faturas_empresa ON faturas(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_faturas_vencimento_pago ON faturas(data_vencimento, pago);
+
+-- ------------------------------------------------------------
 -- Para quem já criou as tabelas antes: alterar imagem_capa para TEXT
 -- (evita erro "valor muito longo" ao editar livro com imagem em base64)
 -- ------------------------------------------------------------

@@ -7,6 +7,7 @@ import EditablePageTitle from '@/components/EditablePageTitle';
 import CancelModal from '@/components/modals/cancelModal';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
+import Pagination, { PAGE_SIZE_DEFAULT } from '@/components/Pagination';
 import { listarClientes, criarCliente, listarCategorias, type ClienteDTO, type CategoriaDTO } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import FormDropdown from '@/components/FormDropdown';
@@ -105,8 +106,9 @@ export default function Clientes() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [quickFilter, setQuickFilter] = useState('all');
-  
+const [quickFilter, setQuickFilter] = useState('all');
+  const [page, setPage] = useState(1);
+
   const [newClient, setNewClient] = useState({
     name: '',
     email: '',
@@ -367,6 +369,10 @@ export default function Clientes() {
     }
     return matchesSearch && matchesStatus && matchesQuickFilter;
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [filteredClients.length]);
 
   const totalClients = clients.length;
   const activeClients = clients.filter(c => ['ACTIVE', 'active', 'VIP', 'vip'].includes(c.status || '')).length;
@@ -732,7 +738,9 @@ export default function Clientes() {
               </TableRow>
             </TableHeader>
             <tbody>
-              {filteredClients.map(client => (
+              {filteredClients
+                .slice((page - 1) * PAGE_SIZE_DEFAULT, page * PAGE_SIZE_DEFAULT)
+                .map(client => (
                 <TableRow key={client.id}>
                   <TableCell>
                     <ClientDetails>
@@ -784,6 +792,13 @@ export default function Clientes() {
               ))}
             </tbody>
           </ClientsTable>
+          <Pagination
+            total={filteredClients.length}
+            pageSize={PAGE_SIZE_DEFAULT}
+            currentPage={page}
+            onPageChange={setPage}
+            itemLabel="clientes"
+          />
           </TableWrapper>
         ) : (
           <EmptyState>

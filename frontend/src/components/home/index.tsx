@@ -9,6 +9,7 @@ import { listarTodosLivros, criarLivro, listarCategorias, type LivroDTO, type Ca
 import ConfirmModal from '@/components/modals/confirmModal';
 import CancelModal from '@/components/modals/cancelModal';
 import SucessModal from '@/components/modals/sucessModal';
+import Pagination, { PAGE_SIZE_DEFAULT } from '@/components/Pagination';
 import {
   validateTitle,
   validateAuthor,
@@ -80,6 +81,7 @@ export default function Home() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
   
   const [newBook, setNewBook] = useState({
     title: '',
@@ -132,6 +134,10 @@ export default function Home() {
     const matchesStock = !showOnlyOutOfStock || (book.estoque ?? 0) === 0;
     return matchesSearch && matchesCategory && matchesStock;
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [filteredBooks.length]);
 
   const handleClearFilter = () => {
     setSelectedCategory('');
@@ -439,8 +445,11 @@ export default function Home() {
             <p>Carregando livros...</p>
           </EmptyState>
         ) : filteredBooks.length > 0 ? (
+          <>
           <BooksGrid>
-            {filteredBooks.map(book => (
+            {filteredBooks
+              .slice((page - 1) * PAGE_SIZE_DEFAULT, page * PAGE_SIZE_DEFAULT)
+              .map(book => (
               <BookCard key={book.id}>
                 {book.imagemCapa ? (
                   <BookCover src={book.imagemCapa} alt={book.titulo} />
@@ -467,6 +476,14 @@ export default function Home() {
               </BookCard>
             ))}
           </BooksGrid>
+          <Pagination
+            total={filteredBooks.length}
+            pageSize={PAGE_SIZE_DEFAULT}
+            currentPage={page}
+            onPageChange={setPage}
+            itemLabel="livros"
+          />
+          </>
         ) : (
           <EmptyState>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

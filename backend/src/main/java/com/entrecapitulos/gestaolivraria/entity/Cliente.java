@@ -58,6 +58,9 @@ public class Cliente {
     @Column(length = 10)
     private String cep;
 
+    @Column(name = "empresa_id")
+    private Long empresaId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

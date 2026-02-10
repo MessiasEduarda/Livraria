@@ -37,10 +37,17 @@ export default function Login() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
-  // Se já estiver logado, redireciona conforme perfil
+  // Se já estiver logado, redireciona conforme tipo de login
   useEffect(() => {
     if (user && !authLoading) {
-      router.replace(user.admin ? '/home' : '/minhas-vendas');
+      if (user.bloqueado) {
+        router.replace('/pagamento-pendente');
+        return;
+      }
+      const tipo = user.tipoUsuario ?? (user.admin ? 'EMPRESA' : 'VENDEDOR');
+      if (tipo === 'SUPER_ADMIN') router.replace('/dashboard-admin');
+      else if (tipo === 'EMPRESA' || user.admin) router.replace('/home');
+      else router.replace('/minhas-vendas');
     }
   }, [user, authLoading, router]);
 
@@ -120,16 +127,16 @@ export default function Login() {
       return;
     }
 
-    // Se passou na validação, chama a API e redireciona conforme perfil
+    // Se passou na validação, chama a API; o useEffect redireciona conforme tipoUsuario
     setLoading(true);
     apiLogin(email.trim(), password)
       .then((data) => {
         setAuth(data);
-        if (data.admin) {
-          router.push('/home');
-        } else {
-          router.push('/minhas-vendas');
-        }
+        const tipo = data.tipoUsuario ?? (data.admin ? 'EMPRESA' : 'VENDEDOR');
+        if (data.bloqueado) router.replace('/pagamento-pendente');
+        else if (tipo === 'SUPER_ADMIN') router.replace('/dashboard-admin');
+        else if (tipo === 'EMPRESA' || data.admin) router.replace('/home');
+        else router.replace('/minhas-vendas');
       })
       .catch((err) => {
         setLoading(false);

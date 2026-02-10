@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
 import { useConfig } from '@/context/ConfigContext';
 import { useAuth } from '@/hooks/useAuth';
 import type { ReactNode } from 'react';
+import * as S from './styles';
 
 interface EditablePageTitleProps {
   pageKey: string;
@@ -41,88 +41,43 @@ export default function EditablePageTitle({ pageKey, defaultTitle, children, cla
 
   if (editing && isAdmin) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-        <input
+      <S.Wrapper>
+        <S.EditInput
           type="text"
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') handleCancel(); }}
-          style={{
-            flex: 1,
-            minWidth: 120,
-            fontSize: 'inherit',
-            fontWeight: 'inherit',
-            padding: '4px 8px',
-            border: '1px solid #6366f1',
-            borderRadius: 6,
-            background: 'rgba(255,255,255,0.05)',
-            color: 'inherit',
-          }}
           autoFocus
+          aria-label="Editar título"
         />
-        <button
-          type="button"
-          onClick={handleSave}
-          aria-label="Salvar"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 6,
-            border: 'none',
-            borderRadius: 6,
-            background: '#22c55e',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          <Check size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={handleCancel}
-          aria-label="Cancelar"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 6,
-            border: 'none',
-            borderRadius: 6,
-            background: '#64748b',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          <X size={18} />
-        </button>
-      </div>
+        <S.ButtonGroup>
+          <S.SaveButton type="button" onClick={handleSave} aria-label="Salvar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </S.SaveButton>
+          <S.CancelButton type="button" onClick={handleCancel} aria-label="Cancelar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </S.CancelButton>
+        </S.ButtonGroup>
+      </S.Wrapper>
     );
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <S.TitleWrapper>
       {children ? children(title) : <span className={className}>{title}</span>}
       {isAdmin && (
-        <button
-          type="button"
-          onClick={handleStartEdit}
-          aria-label="Editar título"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 4,
-            border: 'none',
-            borderRadius: 6,
-            background: 'transparent',
-            color: '#94a3b8',
-            cursor: 'pointer',
-          }}
-        >
-          <Pencil size={18} />
-        </button>
+        <S.EditTriggerButton type="button" onClick={handleStartEdit} aria-label="Editar título">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+            <path d="m15 5 4 4" />
+          </svg>
+        </S.EditTriggerButton>
       )}
-    </div>
+    </S.TitleWrapper>
   );
 }

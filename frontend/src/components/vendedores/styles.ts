@@ -154,6 +154,7 @@ export const TableWrapper = styled.div`
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
   min-width: 0;
+  min-height: 320px;
 `;
 
 export const Table = styled.table`

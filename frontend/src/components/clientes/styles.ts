@@ -369,6 +369,7 @@ export const TableWrapper = styled.div`
   -webkit-overflow-scrolling: touch;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(1, 255, 179, 0.07);
+  min-height: 320px;
 
   @media (max-width: 768px) {
     margin: 0 -4px;

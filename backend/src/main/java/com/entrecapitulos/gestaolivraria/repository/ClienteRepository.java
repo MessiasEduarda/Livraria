@@ -27,4 +27,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
                           @Param("status") StatusCliente status,
                           @Param("categoria") String categoria,
                           Pageable pageable);
+
+    long countByEmpresaId(Long empresaId);
 }

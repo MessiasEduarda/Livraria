@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import EditablePageTitle from '@/components/EditablePageTitle';
+import Pagination, { PAGE_SIZE_DEFAULT } from '@/components/Pagination';
 import { listarTodosLivros, listarCategorias, type LivroDTO, type CategoriaDTO } from '@/services/api';
 import { 
   Container, 
@@ -62,6 +63,7 @@ export default function Estoque() {
   const [selectedStockLevel, setSelectedStockLevel] = useState('all');
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const [isStockFilterOpen, setIsStockFilterOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     listarCategorias().then(setCategories).catch(() => setCategories([]));
@@ -99,6 +101,10 @@ export default function Estoque() {
     }
     return matchesSearch && matchesCategory && matchesStock;
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [filteredBooks.length]);
 
   const totalBooks = books.length;
   const lowStockBooks = books.filter(b => b.estoque < 10).length;
@@ -305,7 +311,9 @@ export default function Estoque() {
               </TableRow>
             </TableHeader>
             <tbody>
-              {filteredBooks.map(book => (
+              {filteredBooks
+                .slice((page - 1) * PAGE_SIZE_DEFAULT, page * PAGE_SIZE_DEFAULT)
+                .map(book => (
                 <TableRow key={book.id}>
                   <TableCell>
                     <BookDetails>
@@ -352,6 +360,13 @@ export default function Estoque() {
               ))}
             </tbody>
           </BooksTable>
+          <Pagination
+            total={filteredBooks.length}
+            pageSize={PAGE_SIZE_DEFAULT}
+            currentPage={page}
+            onPageChange={setPage}
+            itemLabel="livros"
+          />
           </TableWrapper>
         ) : (
           <EmptyState>

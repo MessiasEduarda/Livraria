@@ -22,8 +22,8 @@ function getHeaders(includeAuth = true): HeadersInit {
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    const e = err as { error?: string; message?: string; details?: Record<string, string> };
-    let msg = e.error || e.message || res.statusText;
+    const e = err as { error?: string; message?: string; mensagem?: string; details?: Record<string, string> };
+    let msg = e.mensagem || e.error || e.message || res.statusText;
     if (e.details && typeof e.details === 'object') {
       const parts = Object.entries(e.details).map(([k, v]) => `${k}: ${v}`);
       if (parts.length) msg += ' ' + parts.join('; ');
@@ -42,6 +42,142 @@ export interface LoginResponse {
   nome: string;
   email: string;
   admin: boolean;
+  /** SUPER_ADMIN | EMPRESA | VENDEDOR */
+  tipoUsuario?: string;
+  /** Para EMPRESA: acessos permitidos (LIVROS, ESTOQUE, etc.) */
+  permissoes?: string[];
+  /** Empresa bloqueada por fatura em atraso */
+  bloqueado?: boolean;
+  /** Mensagem quando bloqueado */
+  mensagemBloqueio?: string;
+}
+
+export interface AdminStatsDTO {
+  totalEmpresas: number;
+  totalClientes: number;
+  totalLivros: number;
+  totalVendas: number;
+}
+
+export async function getAdminStats() {
+  const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: getHeaders() });
+  return handleResponse<AdminStatsDTO>(res);
+}
+
+// --- Admin: Empresas ---
+export interface EmpresaDTO {
+  id: number;
+  nome: string;
+  email: string;
+  cnpj?: string;
+  ativo: boolean;
+  formasPagamento: string[];
+  dataCadastro?: string;
+  createdAt?: string;
+  observacoes?: string;
+  totalUsuarios?: number;
+  totalClientes?: number;
+  permissoes?: string[];
+  /** Apenas envio na criação/atualização; não vem na resposta */
+  senha?: string;
+}
+
+export async function listarEmpresas(apenasAtivos = false) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas?apenasAtivos=${apenasAtivos}`, { headers: getHeaders() });
+  return handleResponse<EmpresaDTO[]>(res);
+}
+
+export async function relatorioEmpresas() {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/relatorio`, { headers: getHeaders() });
+  return handleResponse<EmpresaDTO[]>(res);
+}
+
+export async function buscarEmpresa(id: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${id}`, { headers: getHeaders() });
+  return handleResponse<EmpresaDTO>(res);
+}
+
+export async function criarEmpresa(dto: Omit<EmpresaDTO, 'id' | 'totalUsuarios'>) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(dto),
+  });
+  return handleResponse<EmpresaDTO>(res);
+}
+
+export async function atualizarEmpresa(id: number, dto: Partial<EmpresaDTO>) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify({ ...dto, id }),
+  });
+  return handleResponse<EmpresaDTO>(res);
+}
+
+export async function ativarEmpresa(id: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${id}/ativar`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+  });
+  return handleResponse<{ mensagem: string }>(res);
+}
+
+export async function desativarEmpresa(id: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${id}/desativar`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+  });
+  return handleResponse<{ mensagem: string }>(res);
+}
+
+export async function excluirEmpresa(id: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  if (res.status === 204) return;
+  const err = await res.json().catch(() => ({}));
+  throw new Error((err as { mensagem?: string }).mensagem || 'Erro ao excluir empresa');
+}
+
+export interface FaturaDTO {
+  id: number;
+  empresaId: number;
+  valor: number;
+  dataVencimento: string;
+  pago: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  observacoes?: string;
+}
+
+export interface CriarFaturaRequest {
+  valor: number;
+  dataVencimento: string;
+  observacoes?: string;
+}
+
+export async function listarFaturas(empresaId: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${empresaId}/faturas`, { headers: getHeaders() });
+  return handleResponse<FaturaDTO[]>(res);
+}
+
+export async function gerarFatura(empresaId: number, body: CriarFaturaRequest) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${empresaId}/faturas`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(body),
+  });
+  return handleResponse<FaturaDTO>(res);
+}
+
+export async function marcarFaturaComoPaga(empresaId: number, faturaId: number) {
+  const res = await fetch(`${API_BASE}/api/admin/empresas/${empresaId}/faturas/${faturaId}/pago`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+  });
+  return handleResponse<FaturaDTO>(res);
 }
 
 export async function login(email: string, senha: string) {

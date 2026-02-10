@@ -281,6 +281,7 @@ export const BooksGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 24px;
   margin-top: 24px;
+  min-height: 780px;
 
   @media (max-width: 768px) {
     gap: 16px;

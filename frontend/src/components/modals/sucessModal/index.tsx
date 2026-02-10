@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import * as S from './styles';
 
 interface SucessModalProps {
@@ -11,39 +12,30 @@ interface SucessModalProps {
   buttonText?: string;
 }
 
-export default function SucessModal({ 
-  isOpen, 
-  title, 
-  message, 
+export default function SucessModal({
+  isOpen,
+  title,
+  message,
   onClose,
-  buttonText = 'Continuar'
+  buttonText = 'Continuar',
 }: SucessModalProps) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+      if (e.key === 'Escape' && isOpen) onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <S.Overlay onClick={onClose}>
       <S.ModalContainer onClick={(e) => e.stopPropagation()}>
         {title ? (
@@ -52,7 +44,7 @@ export default function SucessModal({
               <S.Title>{title}</S.Title>
             </S.Header>
             <S.Content>
-              <S.Message>{message}</S.Message>
+              <S.Subtitle>{message}</S.Subtitle>
             </S.Content>
           </>
         ) : (
@@ -62,11 +54,13 @@ export default function SucessModal({
         )}
 
         <S.Footer>
-          <S.ConfirmButton onClick={onClose}>
-            {buttonText}
-          </S.ConfirmButton>
+          <S.ConfirmButton onClick={onClose}>{buttonText}</S.ConfirmButton>
         </S.Footer>
       </S.ModalContainer>
     </S.Overlay>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null;
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   LayoutDashboard,
   BookOpen,
@@ -15,7 +14,8 @@ import {
   X,
   Plus,
   ClipboardList,
-  UserCog
+  UserCog,
+  Building2
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
@@ -39,7 +39,6 @@ import {
   Overlay,
   ContentWrapper,
   PageWrapper,
-  NewSaleButton,
 } from './styles';
 
 interface NavbarProps {
@@ -53,6 +52,9 @@ const Navbar = ({ children }: NavbarProps) => {
   const { config } = useConfig();
   const [isOpen, setIsOpen] = useState(false);
   const isAdmin = user?.admin === true;
+  /** Para EMPRESA: só mostra item se tiver permissão (ou se permissoes não veio = mostra tudo) */
+  const hasAcesso = (permissao: string) =>
+    user?.tipoUsuario !== 'EMPRESA' || !user?.permissoes?.length || user.permissoes.includes(permissao);
 
   // Redireciona para login se não estiver autenticado (evita acesso direto por URL)
   useEffect(() => {
@@ -107,41 +109,70 @@ const Navbar = ({ children }: NavbarProps) => {
           <DividerTop />
 
           <Nav>
-            <NavLink href="/home" onClick={closeMenu} selected={pathname === '/home'}>
-              <NavLinkIcon selected={pathname === '/home'}>
-                <BookOpen size={24} />
-              </NavLinkIcon>
-              <NavLinkText selected={pathname === '/home'}>
-                {config.pageTitles?.home ?? 'Livros'}
-              </NavLinkText>
-            </NavLink>
+            {user?.tipoUsuario === 'SUPER_ADMIN' && (
+              <NavLink href="/dashboard-admin" onClick={closeMenu} selected={pathname === '/dashboard-admin'}>
+                <NavLinkIcon selected={pathname === '/dashboard-admin'}>
+                  <Building2 size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/dashboard-admin'}>
+                  Painel do Sistema
+                </NavLinkText>
+              </NavLink>
+            )}
+            {hasAcesso('LIVROS') && (
+              <NavLink href="/home" onClick={closeMenu} selected={pathname === '/home'}>
+                <NavLinkIcon selected={pathname === '/home'}>
+                  <BookOpen size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/home'}>
+                  {config.pageTitles?.home ?? 'Livros'}
+                </NavLinkText>
+              </NavLink>
+            )}
 
-            <NavLink href="/estoque" onClick={closeMenu} selected={pathname === '/estoque'}>
-              <NavLinkIcon selected={pathname === '/estoque'}>
-                <Package size={24} />
-              </NavLinkIcon>
-              <NavLinkText selected={pathname === '/estoque'}>
-                {config.pageTitles?.estoque ?? 'Estoque'}
-              </NavLinkText>
-            </NavLink>
+            {hasAcesso('ESTOQUE') && (
+              <NavLink href="/estoque" onClick={closeMenu} selected={pathname === '/estoque'}>
+                <NavLinkIcon selected={pathname === '/estoque'}>
+                  <Package size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/estoque'}>
+                  {config.pageTitles?.estoque ?? 'Estoque'}
+                </NavLinkText>
+              </NavLink>
+            )}
 
-            <NavLink href="/vendas" onClick={closeMenu} selected={pathname === '/vendas'}>
-              <NavLinkIcon selected={pathname === '/vendas'}>
-                <ShoppingCart size={24} />
-              </NavLinkIcon>
-              <NavLinkText selected={pathname === '/vendas'}>
-                {config.pageTitles?.vendas ?? 'Vendas'}
-              </NavLinkText>
-            </NavLink>
+            {hasAcesso('VENDAS') && (
+              <NavLink href="/vendas" onClick={closeMenu} selected={pathname === '/vendas'}>
+                <NavLinkIcon selected={pathname === '/vendas'}>
+                  <ShoppingCart size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/vendas'}>
+                  {config.pageTitles?.vendas ?? 'Vendas'}
+                </NavLinkText>
+              </NavLink>
+            )}
 
-            <NavLink href="/clientes" onClick={closeMenu} selected={pathname === '/clientes'}>
-              <NavLinkIcon selected={pathname === '/clientes'}>
-                <Users size={24} />
-              </NavLinkIcon>
-              <NavLinkText selected={pathname === '/clientes'}>
-                {config.pageTitles?.clientes ?? 'Clientes'}
-              </NavLinkText>
-            </NavLink>
+{hasAcesso('CLIENTES') && (
+                <NavLink href="/clientes" onClick={closeMenu} selected={pathname === '/clientes'}>
+                <NavLinkIcon selected={pathname === '/clientes'}>
+                  <Users size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/clientes'}>
+                  {config.pageTitles?.clientes ?? 'Clientes'}
+                </NavLinkText>
+              </NavLink>
+            )}
+
+            {!isAdmin && hasAcesso('VENDAS') && (
+              <NavLink href="/novavenda" onClick={closeMenu} selected={pathname === '/novavenda'}>
+                <NavLinkIcon selected={pathname === '/novavenda'}>
+                  <Plus size={24} />
+                </NavLinkIcon>
+                <NavLinkText selected={pathname === '/novavenda'}>
+                  Nova Venda
+                </NavLinkText>
+              </NavLink>
+            )}
 
             {!isAdmin && (
               <NavLink href="/minhas-vendas" onClick={closeMenu} selected={pathname === '/minhas-vendas'}>
@@ -156,52 +187,66 @@ const Navbar = ({ children }: NavbarProps) => {
 
             {isAdmin && (
               <>
-                <NavLink href="/relatorios" onClick={closeMenu} selected={pathname === '/relatorios'}>
-                  <NavLinkIcon selected={pathname === '/relatorios'}>
-                    <BarChart3 size={24} />
-                  </NavLinkIcon>
-                  <NavLinkText selected={pathname === '/relatorios'}>
-                    {config.pageTitles?.relatorios ?? 'Relatórios'}
-                  </NavLinkText>
-                </NavLink>
+                {hasAcesso('RELATORIOS') && (
+                  <NavLink href="/relatorios" onClick={closeMenu} selected={pathname === '/relatorios'}>
+                    <NavLinkIcon selected={pathname === '/relatorios'}>
+                      <BarChart3 size={24} />
+                    </NavLinkIcon>
+                    <NavLinkText selected={pathname === '/relatorios'}>
+                      {config.pageTitles?.relatorios ?? 'Relatórios'}
+                    </NavLinkText>
+                  </NavLink>
+                )}
 
-                <NavLink href="/dashboard" onClick={closeMenu} selected={pathname === '/dashboard'}>
-                  <NavLinkIcon selected={pathname === '/dashboard'}>
-                    <LayoutDashboard size={24} />
-                  </NavLinkIcon>
-                  <NavLinkText selected={pathname === '/dashboard'}>
-                    {config.pageTitles?.dashboard ?? 'Dashboard'}
-                  </NavLinkText>
-                </NavLink>
+                {hasAcesso('DASHBOARD') && (
+                  <NavLink href="/dashboard" onClick={closeMenu} selected={pathname === '/dashboard'}>
+                    <NavLinkIcon selected={pathname === '/dashboard'}>
+                      <LayoutDashboard size={24} />
+                    </NavLinkIcon>
+                    <NavLinkText selected={pathname === '/dashboard'}>
+                      {config.pageTitles?.dashboard ?? 'Dashboard'}
+                    </NavLinkText>
+                  </NavLink>
+                )}
 
-                <NavLink href="/vendedores" onClick={closeMenu} selected={pathname === '/vendedores'}>
-                  <NavLinkIcon selected={pathname === '/vendedores'}>
-                    <UserCog size={24} />
-                  </NavLinkIcon>
-                  <NavLinkText selected={pathname === '/vendedores'}>
-                    Vendedores
-                  </NavLinkText>
-                </NavLink>
+                {hasAcesso('VENDEDORES') && (
+                  <NavLink href="/vendedores" onClick={closeMenu} selected={pathname === '/vendedores'}>
+                    <NavLinkIcon selected={pathname === '/vendedores'}>
+                      <UserCog size={24} />
+                    </NavLinkIcon>
+                    <NavLinkText selected={pathname === '/vendedores'}>
+                      Vendedores
+                    </NavLinkText>
+                  </NavLink>
+                )}
 
-                <NavLink href="/configuracoes" onClick={closeMenu} selected={pathname === '/configuracoes'}>
-                  <NavLinkIcon selected={pathname === '/configuracoes'}>
-                    <Settings size={24} />
-                  </NavLinkIcon>
-                  <NavLinkText selected={pathname === '/configuracoes'}>
-                    {config.pageTitles?.configuracoes ?? 'Configurações'}
-                  </NavLinkText>
-                </NavLink>
+                {hasAcesso('VENDAS') && (
+                  <NavLink href="/novavenda" onClick={closeMenu} selected={pathname === '/novavenda'}>
+                    <NavLinkIcon selected={pathname === '/novavenda'}>
+                      <Plus size={24} />
+                    </NavLinkIcon>
+                    <NavLinkText selected={pathname === '/novavenda'}>
+                      Nova Venda
+                    </NavLinkText>
+                  </NavLink>
+                )}
+
+                {hasAcesso('CONFIGURACOES') && (
+                  <NavLink href="/configuracoes" onClick={closeMenu} selected={pathname === '/configuracoes'}>
+                    <NavLinkIcon selected={pathname === '/configuracoes'}>
+                      <Settings size={24} />
+                    </NavLinkIcon>
+                    <NavLinkText selected={pathname === '/configuracoes'}>
+                      {config.pageTitles?.configuracoes ?? 'Configurações'}
+                    </NavLinkText>
+                  </NavLink>
+                )}
               </>
             )}
           </Nav>
         </div>
 
         <div>
-          <NewSaleButton as={Link} href="/novavenda" onClick={closeMenu}>
-            <Plus size={20} />
-            Nova Venda
-          </NewSaleButton>
-
           <DividerBottom />
 
           <LogoutButton type="button" onClick={handleLogout}>

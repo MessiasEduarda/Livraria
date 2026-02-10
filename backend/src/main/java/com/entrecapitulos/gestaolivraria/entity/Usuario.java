@@ -31,6 +31,9 @@ public class Usuario {
     @Column(name = "eh_vendedor")
     private boolean ehVendedor = true;
 
+    @Column(name = "empresa_id")
+    private Long empresaId;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "usuario_id"))
     @Column(name = "role")

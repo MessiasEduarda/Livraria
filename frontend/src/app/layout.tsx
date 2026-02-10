@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import StyledComponentsRegistry from "@/libs/registry";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ConfigProvider } from "@/context/ConfigContext";
+import BloqueioGuard from "@/components/BloqueioGuard";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -99,7 +100,9 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <AuthProvider>
             <ConfigProvider>
-              {children}
+              <BloqueioGuard>
+                {children}
+              </BloqueioGuard>
             </ConfigProvider>
           </AuthProvider>
         </StyledComponentsRegistry>

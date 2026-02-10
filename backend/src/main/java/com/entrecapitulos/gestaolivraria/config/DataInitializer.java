@@ -65,6 +65,17 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             usuarioRepository.save(henrique);
         }
+        if (usuarioRepository.findByEmail("empresa@entrecapitulos.com.br").isEmpty()) {
+            log.info("Criando usuário empresa@entrecapitulos.com.br (tipo Empresa)");
+            Usuario empresa = Usuario.builder()
+                    .email("empresa@entrecapitulos.com.br")
+                    .senha(passwordEncoder.encode("empresa123"))
+                    .nome("Empresa")
+                    .ehVendedor(true)
+                    .roles(Set.of("USER", "EMPRESA"))
+                    .build();
+            usuarioRepository.save(empresa);
+        }
 
         // Categorias iniciais (somente se não houver nenhuma)
         if (categoriaRepository.count() == 0) {

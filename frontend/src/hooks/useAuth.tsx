@@ -11,6 +11,14 @@ export interface AuthUser {
   nome: string;
   email: string;
   admin: boolean;
+  /** SUPER_ADMIN | EMPRESA | VENDEDOR */
+  tipoUsuario?: string;
+  /** Para EMPRESA: acessos permitidos (LIVROS, ESTOQUE, VENDAS, etc.) */
+  permissoes?: string[];
+  /** Empresa bloqueada por fatura em atraso */
+  bloqueado?: boolean;
+  /** Mensagem quando bloqueado */
+  mensagemBloqueio?: string;
 }
 
 interface AuthContextType {
@@ -57,6 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       nome: data.nome,
       email: data.email,
       admin: data.admin,
+      tipoUsuario: data.tipoUsuario ?? (data.admin ? 'EMPRESA' : 'VENDEDOR'),
+      permissoes: data.permissoes,
+      bloqueado: data.bloqueado ?? false,
+      mensagemBloqueio: data.mensagemBloqueio ?? undefined,
     };
     localStorage.setItem(STORAGE_TOKEN, data.token);
     localStorage.setItem(STORAGE_USER, JSON.stringify(authUser));

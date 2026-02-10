@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ConfirmModal from '@/components/modals/confirmModal';
 import SucessModal from '@/components/modals/sucessModal';
 import ErrorModal from '@/components/modals/errorModal';
+import Pagination, { PAGE_SIZE_DEFAULT } from '@/components/Pagination';
 import {
   listarVendedores,
   criarVendedor,
@@ -57,6 +58,7 @@ export default function VendedoresComponent() {
     confirmarSenha: '',
   });
   const [formErros, setFormErros] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
 
   const carregar = useCallback(async () => {
     setLoading(true);
@@ -80,6 +82,10 @@ export default function VendedoresComponent() {
       v.nome.toLowerCase().includes(search.toLowerCase().trim()) ||
       v.email.toLowerCase().includes(search.toLowerCase().trim())
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [filtrados.length]);
 
   const abrirModal = () => {
     setForm({ nome: '', email: '', senha: '', confirmarSenha: '' });
@@ -190,7 +196,9 @@ export default function VendedoresComponent() {
                   </tr>
                 </S.TableHeader>
                 <tbody>
-                  {filtrados.map((v) => (
+                  {filtrados
+                    .slice((page - 1) * PAGE_SIZE_DEFAULT, page * PAGE_SIZE_DEFAULT)
+                    .map((v) => (
                     <S.TableRow key={v.id}>
                       <S.TableCell>
                         <S.VendedorInfo>
@@ -219,6 +227,13 @@ export default function VendedoresComponent() {
                   ))}
                 </tbody>
               </S.Table>
+              <Pagination
+                total={filtrados.length}
+                pageSize={PAGE_SIZE_DEFAULT}
+                currentPage={page}
+                onPageChange={setPage}
+                itemLabel="vendedores"
+              />
             </S.TableWrapper>
           )}
         </S.Container>
